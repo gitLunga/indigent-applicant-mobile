@@ -30,12 +30,27 @@ It must be reachable **from the phone**, so `localhost` will not do:
 
 | Where you run it        | Value                          |
 |-------------------------|--------------------------------|
+| A real phone on Wi-Fi   | `http://<your-laptop-ip>:5000/api` |
 | Android emulator        | `http://10.0.2.2:5000/api`     |
 | iOS simulator           | `http://localhost:5000/api`    |
-| A real phone on Wi-Fi   | `http://<your-laptop-ip>:5000/api` |
 
-The backend's `CORS_ORIGINS` is not consulted for native requests, but the
-server must be listening on all interfaces for a real device to reach it.
+**CORS is not involved for the native app.** React Native is not a browser and
+sends no `Origin` header, so the backend's allowlist never applies to it. If the
+app cannot reach the API, the cause is one of:
+
+1. `extra.apiUrl` still points at `localhost`, which on a phone means the phone.
+2. The phone is on a different network, or the router has client isolation on.
+3. Windows Firewall is blocking inbound connections to `node.exe`.
+4. Android is refusing plain HTTP (API 28+). Dev builds usually permit it; a
+   release build needs `usesCleartextTraffic` or HTTPS.
+
+Quickest way to tell them apart: open `http://<laptop-ip>:5000/api/health` in the
+**phone's browser**. JSON back means the network is fine and the problem is in
+the app's configuration.
+
+CORS *does* apply to `npx expo start --web`, which runs in a real browser. In
+development the backend accepts any private-network origin, so that works
+without configuration.
 
 ## Screens
 
