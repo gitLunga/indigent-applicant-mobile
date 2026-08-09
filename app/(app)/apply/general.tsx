@@ -25,7 +25,7 @@ import { colors, font, radius, space, type } from '../../../src/theme';
  */
 export default function General() {
   const router = useRouter();
-  const { error, form, set, save } = useDraft();
+  const { error, form, set, save, completed } = useDraft();
 
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState(false);
@@ -49,7 +49,7 @@ export default function General() {
 
   return (
     <>
-      <Stepper current="general" onJump={() => router.back()} />
+      <Stepper current="general" completed={completed} onJump={() => router.back()} />
       <Screen>
         {error ? <Alert tone="error">{error}</Alert> : null}
         {touched && !consentsGiven ? (

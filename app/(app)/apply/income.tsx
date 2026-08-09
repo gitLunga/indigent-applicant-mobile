@@ -24,7 +24,7 @@ import { colors, font, radius, space, type } from '../../../src/theme';
  */
 export default function Income() {
   const router = useRouter();
-  const { error, form, set, save, applicationId, household, refreshHousehold } = useDraft();
+  const { error, form, set, save, applicationId, household, refreshHousehold, completed } = useDraft();
 
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState(false);
@@ -104,7 +104,7 @@ export default function Income() {
 
   return (
     <>
-      <Stepper current="income" onJump={() => router.back()} />
+      <Stepper current="income" completed={completed} onJump={() => router.back()} />
       <Screen>
         {error ? <Alert tone="error">{error}</Alert> : null}
         {touched && blocking.length ? <Alert tone="error">We still need {blocking[0]}.</Alert> : null}

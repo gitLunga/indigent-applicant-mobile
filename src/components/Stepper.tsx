@@ -30,13 +30,36 @@ export type StepKey = typeof WIZARD_STEPS[number]['key'];
 export default function Stepper({
   current,
   onJump,
+  completed,
 }: {
   current: StepKey;
   onJump?: (key: StepKey) => void;
+  /**
+   * Steps whose answers are actually saved and complete.
+   *
+   * Without this a tick meant nothing more than "you walked past here" — a
+   * person could skip through five screens answering nothing and see five green
+   * ticks, then be refused at submission for the things those ticks implied were
+   * done. Passed in from the draft, which knows what is really on the server.
+   *
+   * Optional so a screen that has no draft in hand still renders sensibly; it
+   * then falls back to position, which is the old behaviour.
+   */
+  completed?: StepKey[];
 }) {
   const index = WIZARD_STEPS.findIndex((s) => s.key === current);
   const step = WIZARD_STEPS[index] ?? WIZARD_STEPS[0];
-  const progress = ((index + 1) / WIZARD_STEPS.length) * 100;
+
+  const isDone = (key: StepKey, i: number) =>
+    (completed ? completed.includes(key) : i < index);
+
+  /**
+   * Progress measures work finished, not screens visited.
+   *
+   * Reaching the last screen with nothing filled in should not read as 100%.
+   */
+  const doneCount = WIZARD_STEPS.filter((item, i) => isDone(item.key, i)).length;
+  const progress = (doneCount / WIZARD_STEPS.length) * 100;
 
   return (
     <View style={s.wrap}>
@@ -60,9 +83,12 @@ export default function Stepper({
         contentContainerStyle={s.pips}
       >
         {WIZARD_STEPS.map((item, i) => {
-          const done = i < index;
+          const done = isDone(item.key, i);
           const active = i === index;
-          const reachable = done && Boolean(onJump);
+          // Anything already visited can be reopened to correct an answer, even
+          // if it is not complete — being unable to go back and finish a step is
+          // worse than a tick that has not been earned.
+          const reachable = i < index && Boolean(onJump);
 
           return (
             <View key={item.key} style={s.pipCol}>

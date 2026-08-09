@@ -1,6 +1,9 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api, { friendlyError } from './api';
-import { ApplicationForm, buildPayload, emptyForm, formFromApplication, sexFromIdNumber } from '../lib/application';
+import {
+  ApplicationForm, buildPayload, completedSteps, emptyForm, formFromApplication, sexFromIdNumber,
+  WizardStepKey,
+} from '../lib/application';
 
 /**
  * The draft application, held for the whole wizard.
@@ -46,6 +49,8 @@ type DraftValue = {
   refreshDocuments: () => Promise<void>;
   refreshHousehold: () => Promise<void>;
   submit: () => Promise<{ ok: boolean; message: string }>;
+  /** Wizard steps whose answers are actually complete, for the stepper. */
+  completed: WizardStepKey[];
 };
 
 const DraftContext = createContext<DraftValue | null>(null);
@@ -193,10 +198,13 @@ export function DraftProvider({ children }: { children: ReactNode }) {
     }
   }, [applicationId]);
 
+  /** Recomputed whenever the answers or the checklist change. */
+  const completed = useMemo(() => completedSteps(form, documents), [form, documents]);
+
   const value = useMemo<DraftValue>(() => ({
-    loading, error, applicationId, status, reference, form, documents, household,
+    loading, error, applicationId, status, reference, form, documents, household, completed,
     set, save, reload, refreshDocuments, refreshHousehold, submit,
-  }), [loading, error, applicationId, status, reference, form, documents, household,
+  }), [loading, error, applicationId, status, reference, form, documents, household, completed,
     set, save, reload, refreshDocuments, refreshHousehold, submit]);
 
   return <DraftContext.Provider value={value}>{children}</DraftContext.Provider>;

@@ -24,7 +24,7 @@ const CODE_LENGTH = 6;
  */
 export default function Verify() {
   const router = useRouter();
-  const { form, set, save } = useDraft();
+  const { form, set, save, completed } = useDraft();
 
   const [code, setCode] = useState('');
   const [sent, setSent] = useState(false);
@@ -96,7 +96,7 @@ export default function Verify() {
 
   return (
     <>
-      <Stepper current="verify" onJump={() => router.back()} />
+      <Stepper current="verify" completed={completed} onJump={() => router.back()} />
       <Screen>
         <Panel>
           <SectionTitle icon="phone">Verify your cell number</SectionTitle>

@@ -20,7 +20,7 @@ import { colors, font, space, tracking, type } from '../../../src/theme';
 export default function Documents() {
   const router = useRouter();
   const {
-    error, documents, refreshDocuments, applicationId, submit, status, reference,
+    error, documents, refreshDocuments, applicationId, submit, status, reference, completed,
   } = useDraft();
 
   const [submitting, setSubmitting] = useState(false);
@@ -52,7 +52,7 @@ export default function Documents() {
   if (submitted || status === 'PENDING') {
     return (
       <>
-        <Stepper current="documents" />
+        <Stepper current="documents" completed={completed} />
         <Screen>
           <Panel>
             <View style={s.doneMark}>
@@ -78,7 +78,7 @@ export default function Documents() {
 
   return (
     <>
-      <Stepper current="documents" onJump={() => router.back()} />
+      <Stepper current="documents" completed={completed} onJump={() => router.back()} />
       <Screen>
         {error ? <Alert tone="error">{error}</Alert> : null}
         {submitMessage && !submitted ? <Alert tone="error">{submitMessage}</Alert> : null}

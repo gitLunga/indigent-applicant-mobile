@@ -34,7 +34,7 @@ const TITLE_OPTIONS = [
 
 export default function Particulars() {
   const router = useRouter();
-  const { loading, error, form, set, save, applicationId } = useDraft();
+  const { loading, error, form, set, save, applicationId, completed } = useDraft();
 
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState(false);
@@ -154,7 +154,7 @@ export default function Particulars() {
 
   return (
     <>
-      <Stepper current="particulars" />
+      <Stepper current="particulars" completed={completed} />
       <Screen>
         {error ? <Alert tone="error">{error}</Alert> : null}
         {touched && blocking.length ? (

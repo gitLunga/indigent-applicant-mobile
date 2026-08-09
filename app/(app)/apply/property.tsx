@@ -19,7 +19,7 @@ import { APPLICANT_CATEGORY, TENURE } from '../../../src/lib/application';
  */
 export default function Property() {
   const router = useRouter();
-  const { error, form, set, save } = useDraft();
+  const { error, form, set, save, completed } = useDraft();
 
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState(false);
@@ -59,7 +59,7 @@ export default function Property() {
 
   return (
     <>
-      <Stepper current="property" onJump={() => router.back()} />
+      <Stepper current="property" completed={completed} onJump={() => router.back()} />
       <Screen>
         {error ? <Alert tone="error">{error}</Alert> : null}
         {touched && blocking.length ? (

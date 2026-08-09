@@ -463,6 +463,59 @@ export function buildPayload(form: ApplicationForm, currentStep: number): Record
   return payload;
 }
 
+/**
+ * Which wizard steps are genuinely finished.
+ *
+ * Not "which screens have been visited". A tick that only means somebody walked
+ * past is a tick that lies: they would see six of them and then be refused at
+ * submission for the very things those ticks implied were done. Each step here
+ * is judged on the answers the server actually holds.
+ *
+ * Deliberately not the same as the submission gate. This drives an indicator, so
+ * it asks "has this section been answered" rather than "would the API accept
+ * it" — the API remains the authority, and it says so plainly when it refuses.
+ */
+export type WizardStepKey =
+  'particulars' | 'verify' | 'property' | 'income' | 'general' | 'documents';
+
+export function completedSteps(
+  form: ApplicationForm,
+  documents: { status: string; importance: string; requirementGroup: string | null }[] = []
+): WizardStepKey[] {
+  const done: WizardStepKey[] = [];
+
+  const filled = (v: string) => Boolean(v && v.trim());
+
+  if (filled(form.surname) && filled(form.names) && filled(form.idNumber)
+    && filled(form.cellNumber) && filled(form.residentialAddress) && filled(form.employmentStatus)) {
+    done.push('particulars');
+  }
+
+  // The only step that can be skipped, so it is complete only when truly done.
+  if (form.cellVerified) done.push('verify');
+
+  if (filled(form.tenure) && form.ownsOtherProperty !== null) done.push('property');
+
+  if (filled(form.peopleOnProperty)) done.push('income');
+
+  // All three, because the server stamps consent only when all three are given.
+  if (form.consentSiteVisit && form.consentDataMatching && form.declarationTruthful) {
+    done.push('general');
+  }
+
+  /**
+   * Documents count as done when nothing is outstanding — every required slot
+   * filled, and the financial-evidence group satisfied by any one member.
+   */
+  const required = documents.filter((d) => d.importance === 'REQUIRED');
+  const group = documents.filter((d) => d.importance !== 'REQUIRED' && d.requirementGroup);
+  const requiredDone = required.length > 0 && required.every((d) => d.status === 'Uploaded');
+  const groupDone = group.length === 0 || group.some((d) => d.status === 'Uploaded');
+  if (requiredDone && groupDone) done.push('documents');
+
+  return done;
+}
+
 /** Money as the API returns it — a Decimal, which arrives as a string. */
 export const money = (value: unknown): string => {
   const n = Number(value ?? 0);
