@@ -114,13 +114,52 @@ export const type = {
   h2: 20,
   h3: 17,
   sectionTitle: 17,
+
+  // Display, for the landing hero and the drawer brand lockup. The web has no
+  // equivalent — it has room to say the same thing at h1 and does not need to
+  // carry a page on one line.
+  display: 32,
+  displaySmall: 28,
+
+  /** Small caps-and-tracking labels: "APPLICATION STATUS", step counters. */
+  overline: 11,
 } as const;
 
-export const weight = {
-  regular: '400',
-  medium: '500',
-  semibold: '600',
-  bold: '700',
+/**
+ * Font families, not weights.
+ *
+ * This is the single most important thing in this file to get right. React
+ * Native does **not** synthesise weights for a custom font: on Android,
+ * `fontFamily: 'PlusJakartaSans_400Regular'` plus `fontWeight: '600'` renders
+ * *regular*, silently. The bold you asked for simply does not arrive, and it
+ * still looks correct on iOS — which is how a whole app ships looking flat on
+ * half its devices.
+ *
+ * So weight is expressed by picking a family, never by `fontWeight`. The old
+ * `weight` export was deleted rather than deprecated: every call site that still
+ * uses it is now a TypeScript error, which is the only reliable way to find all
+ * of them.
+ */
+export const font = {
+  regular: 'PlusJakartaSans_400Regular',
+  medium: 'PlusJakartaSans_500Medium',
+  semibold: 'PlusJakartaSans_600SemiBold',
+  bold: 'PlusJakartaSans_700Bold',
+  extraBold: 'PlusJakartaSans_800ExtraBold',
+} as const;
+
+/**
+ * Tracking.
+ *
+ * Plus Jakarta Sans is a touch wide at display sizes, so headings pull in; the
+ * overline labels push out, because caps at 11px without tracking read as a
+ * single grey block.
+ */
+export const tracking = {
+  display: -0.8,
+  heading: -0.3,
+  normal: 0,
+  overline: 0.8,
 } as const;
 
 /**

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, space, type, weight } from '../theme';
+import Icon from './Icon';
+import { colors, font, radius, space, tracking, type } from '../theme';
 
 /**
  * Where you are in the form, and how much is left.
@@ -40,8 +41,11 @@ export default function Stepper({
   return (
     <View style={s.wrap}>
       <View style={s.headline}>
-        <Text style={s.count}>Step {index + 1} of {WIZARD_STEPS.length}</Text>
-        <Text style={s.label}>{step.label}</Text>
+        <View style={s.flex}>
+          <Text style={s.count}>Step {index + 1} of {WIZARD_STEPS.length}</Text>
+          <Text style={s.label}>{step.label}</Text>
+        </View>
+        <Text style={s.percent}>{Math.round(progress)}%</Text>
       </View>
 
       {/* The bar carries the same information as the pips below, for anybody who
@@ -61,24 +65,35 @@ export default function Stepper({
           const reachable = done && Boolean(onJump);
 
           return (
-            <Pressable
-              key={item.key}
-              disabled={!reachable}
-              onPress={() => reachable && onJump?.(item.key)}
-              hitSlop={6}
-              accessibilityRole="button"
-              accessibilityLabel={`Step ${i + 1}, ${item.label}${done ? ', completed' : active ? ', current' : ''}`}
-              style={s.pipWrap}
-            >
-              <View style={[s.pip, done && s.pipDone, active && s.pipActive]}>
-                <Text style={[s.pipText, (done || active) && s.pipTextOn]}>
-                  {done ? '✓' : i + 1}
+            <View key={item.key} style={s.pipCol}>
+              <Pressable
+                disabled={!reachable}
+                onPress={() => reachable && onJump?.(item.key)}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  `Step ${i + 1}, ${item.label}${done ? ', completed' : active ? ', current' : ', not yet reached'}`
+                }
+                style={s.pipWrap}
+              >
+                <View style={[s.pip, done && s.pipDone, active && s.pipActive]}>
+                  {done ? (
+                    <Icon name="check" size={14} color={colors.white} strokeWidth={3} />
+                  ) : (
+                    <Text style={[s.pipText, active && s.pipTextOn]}>{i + 1}</Text>
+                  )}
+                </View>
+                <Text style={[s.pipLabel, active && s.pipLabelActive]} numberOfLines={1}>
+                  {item.short}
                 </Text>
-              </View>
-              <Text style={[s.pipLabel, active && s.pipLabelActive]} numberOfLines={1}>
-                {item.short}
-              </Text>
-            </Pressable>
+              </Pressable>
+
+              {/* The connector sits between pips, not under them, so the row
+                  reads as one sequence rather than six unrelated badges. */}
+              {i < WIZARD_STEPS.length - 1 ? (
+                <View style={[s.connector, done && s.connectorDone]} />
+              ) : null}
+            </View>
           );
         })}
       </ScrollView>
@@ -87,6 +102,7 @@ export default function Stepper({
 }
 
 const s = StyleSheet.create({
+  flex: { flex: 1 },
   wrap: {
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
@@ -94,39 +110,50 @@ const s = StyleSheet.create({
     paddingTop: space.md,
     paddingBottom: space.sm,
   },
-  headline: { paddingHorizontal: space.base, marginBottom: space.sm },
+  headline: {
+    flexDirection: 'row', alignItems: 'flex-end', gap: space.md,
+    paddingHorizontal: space.base, marginBottom: space.sm,
+  },
   count: {
-    fontSize: type.small,
-    fontWeight: weight.semibold,
+    fontSize: type.overline,
+    fontFamily: font.bold,
     color: colors.brand,
     textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    letterSpacing: tracking.overline,
   },
-  label: { fontSize: type.h3, fontWeight: weight.semibold, color: colors.ink, marginTop: 2 },
+  label: {
+    fontSize: type.h3, fontFamily: font.bold, color: colors.ink,
+    letterSpacing: tracking.heading, marginTop: 2,
+  },
+  percent: { fontSize: type.hint, fontFamily: font.bold, color: colors.inkMute },
 
   track: {
-    height: 3,
+    height: 4,
     backgroundColor: colors.slate200,
     marginHorizontal: space.base,
     borderRadius: radius.pill,
     overflow: 'hidden',
     marginBottom: space.md,
   },
-  fill: { height: 3, backgroundColor: colors.brand, borderRadius: radius.pill },
+  fill: { height: 4, backgroundColor: colors.brand, borderRadius: radius.pill },
 
-  pips: { paddingHorizontal: space.base, gap: space.base, alignItems: 'flex-start' },
-  pipWrap: { alignItems: 'center', width: 62 },
+  pips: { paddingHorizontal: space.base, alignItems: 'flex-start' },
+  pipCol: { flexDirection: 'row', alignItems: 'flex-start' },
+  pipWrap: { alignItems: 'center', width: 58 },
   pip: {
-    width: 26, height: 26, borderRadius: 13,
-    borderWidth: 1, borderColor: colors.lineStrong,
+    width: 28, height: 28, borderRadius: 14,
+    borderWidth: 1.5, borderColor: colors.lineStrong,
     backgroundColor: colors.surface,
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: 5,
   },
   pipDone: { backgroundColor: colors.success, borderColor: colors.success },
   pipActive: { backgroundColor: colors.brand, borderColor: colors.brand },
-  pipText: { fontSize: type.small, fontWeight: weight.semibold, color: colors.inkMute },
+  pipText: { fontSize: type.hint, fontFamily: font.bold, color: colors.inkMute },
   pipTextOn: { color: colors.white },
-  pipLabel: { fontSize: 11, color: colors.inkMute, textAlign: 'center' },
-  pipLabelActive: { color: colors.ink, fontWeight: weight.semibold },
+  pipLabel: { fontSize: 11, fontFamily: font.medium, color: colors.inkMute, textAlign: 'center' },
+  pipLabelActive: { color: colors.ink, fontFamily: font.bold },
+
+  connector: { width: 14, height: 2, backgroundColor: colors.line, marginTop: 13 },
+  connectorDone: { backgroundColor: colors.success },
 });
