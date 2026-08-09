@@ -6,7 +6,7 @@ import { Alert, Button, Field, Hint } from '../../src/components/ui';
 import { useAuth } from '../../src/services/auth';
 import { friendlyError } from '../../src/services/api';
 import { cellNumberProblem, identityFromIdNumber, idNumberProblem } from '../../src/lib/application';
-import { colors, radius, space, type, weight } from '../../src/theme';
+import { colors, font, radius, space, type } from '../../src/theme';
 
 /**
  * Create an account.
@@ -160,15 +160,15 @@ const s = StyleSheet.create({
     width: 36, height: 36, borderRadius: radius.md,
     backgroundColor: colors.brand, alignItems: 'center', justifyContent: 'center',
   },
-  markText: { color: colors.white, fontWeight: weight.bold, fontSize: type.label },
-  brandName: { fontSize: type.h3, fontWeight: weight.semibold, color: colors.ink },
+  markText: { color: colors.white, fontFamily: font.bold, fontSize: type.label },
+  brandName: { fontSize: type.h3, fontFamily: font.semibold, color: colors.ink },
 
-  title: { fontSize: type.h1, fontWeight: weight.semibold, color: colors.ink, marginBottom: space.sm },
-  lede: { fontSize: type.body, color: colors.inkSoft, lineHeight: 24, marginBottom: space.lg },
+  title: { fontSize: type.h1, fontFamily: font.semibold, color: colors.ink, marginBottom: space.sm },
+  lede: { fontFamily: font.regular, fontSize: type.body, color: colors.inkSoft, lineHeight: 24, marginBottom: space.lg },
 
   reveal: { alignSelf: 'flex-start', marginTop: -space.sm, marginBottom: space.base },
-  revealText: { fontSize: type.hint, color: colors.brand, fontWeight: weight.medium },
+  revealText: { fontSize: type.hint, color: colors.brand, fontFamily: font.medium },
 
   back: { alignSelf: 'center', marginTop: space.lg, marginBottom: space.base },
-  link: { fontSize: type.label, color: colors.brand, fontWeight: weight.medium },
+  link: { fontSize: type.label, color: colors.brand, fontFamily: font.medium },
 });

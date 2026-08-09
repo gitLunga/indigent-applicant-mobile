@@ -7,7 +7,7 @@ import {
 } from '../../../src/components/ui';
 import { useDraft } from '../../../src/services/draft';
 import { DIFFICULTY, FUNCTIONING_DOMAINS } from '../../../src/lib/application';
-import { colors, radius, space, type, weight } from '../../../src/theme';
+import { colors, font, radius, space, type } from '../../../src/theme';
 
 /**
  * Step 5 — general information, consent, and the functioning questions.
@@ -60,7 +60,7 @@ export default function General() {
 
         {/* --- General questions ---------------------------------------- */}
         <Panel>
-          <SectionTitle>A few more questions</SectionTitle>
+          <SectionTitle icon="help">A few more questions</SectionTitle>
 
           <YesNo
             label="Do you live at this property full time?"
@@ -86,7 +86,7 @@ export default function General() {
 
         {/* --- Functioning ---------------------------------------------- */}
         <Panel>
-          <SectionTitle>Difficulty with daily activities</SectionTitle>
+          <SectionTitle icon="user">Difficulty with daily activities</SectionTitle>
 
           <Alert tone="info">
             These six questions are about health, so they are treated as especially private. Answering them is
@@ -115,7 +115,7 @@ export default function General() {
 
         {/* --- Consent -------------------------------------------------- */}
         <Panel>
-          <SectionTitle>Your agreement</SectionTitle>
+          <SectionTitle icon="check-circle">Your agreement</SectionTitle>
 
           <Text style={s.lede}>
             The municipality needs your permission for the checks that decide an indigent application. Without
@@ -166,11 +166,11 @@ export default function General() {
 }
 
 const s = StyleSheet.create({
-  lede: { fontSize: type.body, color: colors.inkSoft, lineHeight: 24, marginBottom: space.base },
+  lede: { fontFamily: font.regular, fontSize: type.body, color: colors.inkSoft, lineHeight: 24, marginBottom: space.base },
   consented: {
     padding: space.md,
     backgroundColor: colors.successSoft,
     borderWidth: 1, borderColor: colors.successLine, borderRadius: radius.md,
   },
-  consentedText: { fontSize: type.hint, color: colors.success, lineHeight: 19, fontWeight: weight.medium },
+  consentedText: { fontSize: type.hint, color: colors.success, lineHeight: 19, fontFamily: font.medium },
 });

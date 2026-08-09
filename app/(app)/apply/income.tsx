@@ -8,7 +8,7 @@ import {
 import { useDraft } from '../../../src/services/draft';
 import api, { friendlyError } from '../../../src/services/api';
 import { money } from '../../../src/lib/application';
-import { colors, radius, space, type, weight } from '../../../src/theme';
+import { colors, font, radius, space, type } from '../../../src/theme';
 
 /**
  * Step 4 — who lives here, and what the household lives on.
@@ -110,7 +110,7 @@ export default function Income() {
         {touched && blocking.length ? <Alert tone="error">We still need {blocking[0]}.</Alert> : null}
 
         <Panel>
-          <SectionTitle>Who lives on the property</SectionTitle>
+          <SectionTitle icon="user">Who lives on the property</SectionTitle>
 
           <Field
             label="How many people live here in total?"
@@ -142,7 +142,7 @@ export default function Income() {
 
         {/* --- The household roll --------------------------------------- */}
         <Panel>
-          <SectionTitle>Everyone in the household</SectionTitle>
+          <SectionTitle icon="applications">Everyone in the household</SectionTitle>
           <Hint>
             List the other people living with you. Their details stay private — nobody in the household sees
             what another person earns.
@@ -200,7 +200,7 @@ export default function Income() {
 
         {/* --- Income --------------------------------------------------- */}
         <Panel>
-          <SectionTitle>Money coming in each month</SectionTitle>
+          <SectionTitle icon="money">Money coming in each month</SectionTitle>
           <Hint>
             Enter what the household actually receives each month, before any deductions. If a source does not
             apply, leave it blank.
@@ -274,7 +274,7 @@ export default function Income() {
 
 const s = StyleSheet.create({
   flex: { flex: 1 },
-  empty: { fontSize: type.label, color: colors.inkMute, fontStyle: 'italic', marginBottom: space.md },
+  empty: { fontFamily: font.regular, fontSize: type.label, color: colors.inkMute, fontStyle: 'italic', marginBottom: space.md },
 
   members: { gap: space.sm, marginBottom: space.base },
   member: {
@@ -283,9 +283,9 @@ const s = StyleSheet.create({
     backgroundColor: colors.slate50,
     borderWidth: 1, borderColor: colors.line, borderRadius: radius.md,
   },
-  memberName: { fontSize: type.body, fontWeight: weight.medium, color: colors.ink },
-  memberMeta: { fontSize: type.hint, color: colors.inkMute, marginTop: 2 },
-  remove: { fontSize: type.hint, color: colors.danger, fontWeight: weight.medium },
+  memberName: { fontSize: type.body, fontFamily: font.medium, color: colors.ink },
+  memberMeta: { fontFamily: font.regular, fontSize: type.hint, color: colors.inkMute, marginTop: 2 },
+  remove: { fontSize: type.hint, color: colors.danger, fontFamily: font.medium },
 
   addBox: {
     padding: space.md, marginTop: space.sm,
@@ -304,7 +304,7 @@ const s = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.12)',
   },
   totalRowLast: { borderBottomWidth: 0 },
-  totalLabel: { fontSize: type.label, color: colors.slate300 },
-  totalValue: { fontSize: type.h3, fontWeight: weight.semibold, color: colors.white },
-  totalNote: { fontSize: type.hint, color: colors.slate400, marginTop: space.sm, lineHeight: 18 },
+  totalLabel: { fontFamily: font.semibold, fontSize: type.label, color: colors.slate300 },
+  totalValue: { fontSize: type.h3, fontFamily: font.semibold, color: colors.white },
+  totalNote: { fontFamily: font.regular, fontSize: type.hint, color: colors.slate400, marginTop: space.sm, lineHeight: 18 },
 });

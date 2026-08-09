@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import Stepper from '../../../src/components/Stepper';
 import {
-  Actions, Alert, Button, Choice, Field, Hint, Panel, Screen, SectionTitle, YesNo,
+  Actions, Alert, Button, Choice, Field, Hint, Panel, Screen, SectionTitle, Select, YesNo,
 } from '../../../src/components/ui';
 import { useDraft } from '../../../src/services/draft';
 import { APPLICANT_CATEGORY, TENURE } from '../../../src/lib/application';
@@ -67,12 +67,18 @@ export default function Property() {
         ) : null}
 
         <Panel>
-          <SectionTitle>The property</SectionTitle>
+          <SectionTitle icon="home">The property</SectionTitle>
 
+          {/* Kept as radios deliberately, against the general rule that three or
+              more options belong in a dropdown. This answer adds a title deed or
+              a lease to the checklist two screens later, and the alert below
+              spells that out as soon as it is picked. Somebody weighing "own" vs
+              "occupy" should be able to see both, and their consequence, without
+              opening anything. */}
           <Choice
             label="Do you own or rent this property?"
             value={form.tenure as never}
-            options={TENURE.map((o) => ({ value: o.value, label: o.label }))}
+            options={TENURE}
             onChange={(v) => set('tenure', v)}
           />
 
@@ -80,10 +86,10 @@ export default function Property() {
             <Alert tone="info">Because of this answer, you will be asked for {extraDocument}.</Alert>
           ) : null}
 
-          <Choice
+          <Select
             label="Does any of this describe your household?"
             value={form.applicantCategory as never}
-            options={APPLICANT_CATEGORY.map((o) => ({ value: o.value, label: o.label }))}
+            options={APPLICANT_CATEGORY}
             onChange={(v) => set('applicantCategory', v)}
             hint="This decides which extra documents apply to you. Choose the closest one."
           />
@@ -104,7 +110,7 @@ export default function Property() {
         </Panel>
 
         <Panel>
-          <SectionTitle>Your municipal account</SectionTitle>
+          <SectionTitle icon="file-text">Your municipal account</SectionTitle>
 
           <Field
             label="Municipal account number"
@@ -146,7 +152,7 @@ export default function Property() {
         </Panel>
 
         <Panel>
-          <SectionTitle>Other property</SectionTitle>
+          <SectionTitle icon="home">Other property</SectionTitle>
 
           <YesNo
             label="Do you or anyone in the household own any other property?"

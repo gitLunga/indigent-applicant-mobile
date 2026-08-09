@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import Stepper from '../../../src/components/Stepper';
 import {
-  Actions, Alert, Button, CheckRow, Choice, Field, Hint, Loading, Panel, Screen, SectionTitle,
+  Actions, Alert, Button, CheckRow, Choice, Field, Hint, Loading, Panel, Screen, SectionTitle, Select,
 } from '../../../src/components/ui';
 import { useDraft } from '../../../src/services/draft';
 import api, { friendlyError } from '../../../src/services/api';
@@ -12,7 +12,7 @@ import {
   cellNumberProblem, EMPLOYER_DETAILS_NEEDED, EMPLOYMENT_STATUS, identityFromIdNumber,
   idNumberProblem, MARITAL_STATUS, postalProblems, SEX, sexFromIdNumber, TITLES,
 } from '../../../src/lib/application';
-import { colors, radius, space, type, weight } from '../../../src/theme';
+import { colors, font, radius, space, type } from '../../../src/theme';
 
 /**
  * Step 1 — Applicant particulars.
@@ -26,6 +26,12 @@ import { colors, radius, space, type, weight } from '../../../src/theme';
  * anything about an employer. On the old form an unemployed person met three
  * questions they could not answer and had to work out that they did not apply.
  */
+/** The listed titles, plus the way out of the list. */
+const TITLE_OPTIONS = [
+  ...TITLES.map((t) => ({ value: t, label: t })),
+  { value: 'OTHER', label: 'Something else…' },
+];
+
 export default function Particulars() {
   const router = useRouter();
   const { loading, error, form, set, save, applicationId } = useDraft();
@@ -34,7 +40,17 @@ export default function Particulars() {
   const [touched, setTouched] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locationNote, setLocationNote] = useState<string | null>(null);
-  const [titleOpen, setTitleOpen] = useState(false);
+  const [titleOther, setTitleOther] = useState(false);
+
+  /**
+   * Whether the title box is showing.
+   *
+   * Either because "Something else" was picked, or because a saved draft came
+   * back with a title that is not on the list — a returning applicant who typed
+   * "Kgosi" last week must see "Kgosi", not an empty dropdown that silently
+   * discards it on the next save.
+   */
+  const titleIsOther = titleOther || (form.title !== '' && !TITLES.includes(form.title));
 
   const identity = useMemo(() => identityFromIdNumber(form.idNumber), [form.idNumber]);
   const derivedSex = useMemo(() => sexFromIdNumber(form.idNumber), [form.idNumber]);
@@ -146,35 +162,38 @@ export default function Particulars() {
         ) : null}
 
         <Panel>
-          <SectionTitle>About you</SectionTitle>
+          <SectionTitle icon="user">About you</SectionTitle>
 
-          {/* Title: suggestions, not a fixed list. Any list is too short for the
-              titles people actually use, and getting somebody's title wrong on a
-              municipal letter is a small insult that costs nothing to avoid. */}
-          <Field
+          {/* Title is a list with a way out of it.
+              Ten titles cover almost everybody, and a dropdown is the right shape
+              for choosing one. But any fixed list is too short for the titles
+              people actually use, and getting somebody's title wrong on a
+              municipal letter is a small insult that costs nothing to avoid — so
+              "Something else" opens a free-text box and the field still accepts
+              anything typed. */}
+          <Select
             label="Title"
-            value={form.title}
-            onChangeText={(v) => set('title', v)}
-            placeholder="Mr, Mrs, Ms, Dr…"
-            maxLength={20}
-            autoCapitalize="words"
+            optional
+            value={titleIsOther ? 'OTHER' : (form.title as string)}
+            options={TITLE_OPTIONS}
+            onChange={(v) => {
+              if (v === 'OTHER') { setTitleOther(true); set('title', ''); return; }
+              setTitleOther(false);
+              set('title', v);
+            }}
           />
-          <View style={s.chips}>
-            {TITLES.slice(0, titleOpen ? TITLES.length : 5).map((t) => (
-              <Pressable
-                key={t}
-                onPress={() => set('title', t)}
-                style={({ pressed }) => [s.chip, form.title === t && s.chipOn, pressed && s.chipPressed]}
-              >
-                <Text style={[s.chipText, form.title === t && s.chipTextOn]}>{t}</Text>
-              </Pressable>
-            ))}
-            {!titleOpen ? (
-              <Pressable onPress={() => setTitleOpen(true)} style={s.chip}>
-                <Text style={s.chipText}>More…</Text>
-              </Pressable>
-            ) : null}
-          </View>
+
+          {titleIsOther ? (
+            <Field
+              label="Your title"
+              value={form.title}
+              onChangeText={(v) => set('title', v)}
+              placeholder="Kgosi, Imam, Sister…"
+              maxLength={20}
+              autoCapitalize="words"
+              autoFocus
+            />
+          ) : null}
 
           <Field label="Surname" value={form.surname} onChangeText={(v) => set('surname', v)}
             placeholder="Mthembu" autoCapitalize="words" />
@@ -212,10 +231,13 @@ export default function Particulars() {
           {/* Filled in from the ID, and changeable: the sequence digits record
               sex as registered at birth, which is the right default and wrong for
               some people. */}
+          {/* Two options, both one word: side-by-side radios, not a dropdown.
+              Hiding a binary choice behind a tap is work for no benefit. */}
           <Choice
             label="Sex"
+            columns
             value={form.sex as '' | 'FEMALE' | 'MALE'}
-            options={SEX.map((o) => ({ value: o.value, label: o.label }))}
+            options={SEX}
             onChange={(v) => set('sex', v)}
             hint={
               derivedSex && form.sex && derivedSex !== form.sex
@@ -224,10 +246,13 @@ export default function Particulars() {
             }
           />
 
-          <Choice
+          {/* Five options, none of which change what is asked next — a dropdown.
+              Five radio rows here pushed the cell number below the fold for no
+              reason: nothing on this screen depends on the answer. */}
+          <Select
             label="Marital status"
             value={form.maritalStatus as never}
-            options={MARITAL_STATUS.map((o) => ({ value: o.value, label: o.label }))}
+            options={MARITAL_STATUS}
             onChange={(v) => set('maritalStatus', v)}
           />
 
@@ -244,7 +269,7 @@ export default function Particulars() {
 
         {/* --- Where you live ------------------------------------------- */}
         <Panel>
-          <SectionTitle>Where you live</SectionTitle>
+          <SectionTitle icon="map-pin">Where you live</SectionTitle>
 
           <Field
             label="Residential address"
@@ -300,7 +325,7 @@ export default function Particulars() {
 
         {/* --- Postal address ------------------------------------------- */}
         <Panel>
-          <SectionTitle>Postal address</SectionTitle>
+          <SectionTitle icon="mail">Postal address</SectionTitle>
 
           <CheckRow
             label="My postal address is the same as my residential address"
@@ -359,12 +384,17 @@ export default function Particulars() {
 
         {/* --- Employment ----------------------------------------------- */}
         <Panel>
-          <SectionTitle>Employment</SectionTitle>
+          <SectionTitle icon="money">Employment</SectionTitle>
 
-          <Choice
+          {/* A dropdown even though the answer *does* reveal the employer fields
+              below. Those fields appear directly underneath and are impossible
+              to miss once shown, so nothing is hidden by collapsing the list —
+              unlike tenure, where the consequence is a document requirement two
+              screens away. */}
+          <Select
             label="Are you employed?"
             value={form.employmentStatus as never}
-            options={EMPLOYMENT_STATUS.map((o) => ({ value: o.value, label: o.label }))}
+            options={EMPLOYMENT_STATUS}
             onChange={(v) => set('employmentStatus', v)}
           />
 
@@ -414,17 +444,6 @@ export default function Particulars() {
 const s = StyleSheet.create({
   flex: { flex: 1 },
 
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: -space.sm, marginBottom: space.base },
-  chip: {
-    paddingHorizontal: space.md, paddingVertical: space.sm,
-    borderRadius: radius.pill, borderWidth: 1, borderColor: colors.lineStrong,
-    backgroundColor: colors.surface, minHeight: 36, justifyContent: 'center',
-  },
-  chipOn: { borderColor: colors.brand, backgroundColor: colors.brandSoft },
-  chipPressed: { opacity: 0.7 },
-  chipText: { fontSize: type.hint, color: colors.inkSoft },
-  chipTextOn: { color: colors.brand, fontWeight: weight.semibold },
-
   derived: {
     flexDirection: 'row', flexWrap: 'wrap', gap: space.lg,
     padding: space.md, marginTop: -space.sm, marginBottom: space.base,
@@ -432,13 +451,13 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: colors.line, borderRadius: radius.md,
   },
   derivedItem: { minWidth: 96 },
-  derivedLabel: { fontSize: type.small, color: colors.inkMute, textTransform: 'uppercase', letterSpacing: 0.5 },
-  derivedValue: { fontSize: type.body, fontWeight: weight.semibold, color: colors.ink },
-  derivedNote: { width: '100%', fontSize: type.hint, color: colors.inkMute },
+  derivedLabel: { fontFamily: font.semibold, fontSize: type.small, color: colors.inkMute, textTransform: 'uppercase', letterSpacing: 0.5 },
+  derivedValue: { fontSize: type.body, fontFamily: font.semibold, color: colors.ink },
+  derivedNote: { fontFamily: font.regular, width: '100%', fontSize: type.hint, color: colors.inkMute },
 
   locationRow: { flexDirection: 'row', gap: space.sm, marginBottom: space.sm },
   locating: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.sm },
-  locatingText: { fontSize: type.hint, color: colors.inkMute },
+  locatingText: { fontFamily: font.regular, fontSize: type.hint, color: colors.inkMute },
 
   pin: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -446,6 +465,6 @@ const s = StyleSheet.create({
     backgroundColor: colors.successSoft,
     borderWidth: 1, borderColor: colors.successLine, borderRadius: radius.md,
   },
-  pinText: { flex: 1, fontSize: type.hint, color: colors.success },
-  pinRemove: { fontSize: type.hint, color: colors.danger, fontWeight: weight.medium },
+  pinText: { fontFamily: font.medium, flex: 1, fontSize: type.hint, color: colors.success },
+  pinRemove: { fontSize: type.hint, color: colors.danger, fontFamily: font.medium },
 });

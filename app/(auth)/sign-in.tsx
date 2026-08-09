@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Brand from '../../src/components/Brand';
+import Icon from '../../src/components/Icon';
 import { Alert, Button, Field, Hint } from '../../src/components/ui';
 import { useAuth, SIGN_OUT_MESSAGE } from '../../src/services/auth';
 import { friendlyError } from '../../src/services/api';
-import { colors, radius, space, type, weight } from '../../src/theme';
+import { colors, font, radius, shadow, space, tracking, type } from '../../src/theme';
 
 /**
  * Sign in.
@@ -14,9 +17,15 @@ import { colors, radius, space, type, weight } from '../../src/theme';
  * registered at their door by a councillor have no email — their SMS tells them
  * to sign in with their number, and the server matches on either. Labelling it
  * "email" would tell those households, wrongly, that the app is not for them.
+ *
+ * The navy band at the top is the same institutional chrome as the portal's
+ * sidebar and the landing hero. It is doing a job beyond decoration: this is the
+ * screen where somebody types a password, and looking unmistakably like the
+ * municipality's own product is what separates it from a lookalike.
  */
 export default function SignIn() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { signIn, signedOutBecause, clearSignOutReason } = useAuth();
 
   const [identifier, setIdentifier] = useState('');
@@ -47,82 +56,92 @@ export default function SignIn() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={s.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={s.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         style={s.flex}
-        contentContainerStyle={[s.content, { paddingTop: insets.top + space.xxl }]}
+        contentContainerStyle={s.content}
         keyboardShouldPersistTaps="handled"
       >
         {/* The masthead, in the institutional navy and brand red of the portal. */}
-        <View style={s.brand}>
-          <View style={s.mark}><Text style={s.markText}>IR</Text></View>
-          <View style={s.flex}>
-            <Text style={s.brandName}>Indigent Register</Text>
-            <Text style={s.brandSub}>Municipal support application</Text>
+        <LinearGradient colors={[colors.navy900, colors.navy700]} style={[s.head, { paddingTop: insets.top + space.base }]}>
+          <Pressable
+            onPress={() => router.replace('/')}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Back to the home page"
+            style={s.back}
+          >
+            <Icon name="arrow-left" size={18} color={colors.slate300} />
+            <Text style={s.backText}>Home</Text>
+          </Pressable>
+
+          <Brand size={40} onDark />
+
+          <Text style={s.title}>Welcome back</Text>
+          <Text style={s.lede}>
+            Sign in to continue an application, upload outstanding documents, or check where yours has got to.
+          </Text>
+        </LinearGradient>
+
+        <View style={s.card}>
+          {/* Hidden once they have tried again, so an older notice does not sit
+              above a fresh error and confuse which one is current. */}
+          {notice && !error ? <Alert tone={notice.tone}>{notice.text}</Alert> : null}
+          {error ? <Alert tone="error">{error}</Alert> : null}
+
+          <Field
+            label="Email address or cell number"
+            value={identifier}
+            onChangeText={(v) => { setIdentifier(v); if (notice) clearSignOutReason(); }}
+            placeholder="you@example.com or 082 123 4567"
+            keyboardType="email-address"
+            textContentType="username"
+            autoComplete="username"
+            returnKeyType="next"
+          />
+
+          <Field
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Your password"
+            secureTextEntry={!show}
+            textContentType="password"
+            autoComplete="password"
+            returnKeyType="go"
+            onSubmitEditing={submit}
+          />
+
+          {/*
+            A reveal toggle rather than an eye icon inside the field. On a phone
+            keyboard, mistyping a password you cannot see is the most common reason
+            a sign-in fails — and an icon overlapping the text is a smaller target
+            than a labelled line of text beneath it.
+          */}
+          <Pressable onPress={() => setShow((v) => !v)} hitSlop={10} style={s.reveal}>
+            <Icon name={show ? 'eye-off' : 'eye'} size={15} color={colors.brand} />
+            <Text style={s.revealText}>{show ? 'Hide password' : 'Show password'}</Text>
+          </Pressable>
+
+          <Button title="Sign in" icon="arrow-right" iconAfter onPress={submit} loading={busy} />
+
+          <View style={s.footer}>
+            <Link href="/(auth)/register" asChild>
+              <Pressable hitSlop={8}><Text style={s.link}>Create an account</Text></Pressable>
+            </Link>
+            <Text style={s.dot}>·</Text>
+            <Link href="/(auth)/forgot-password" asChild>
+              <Pressable hitSlop={8}><Text style={s.link}>Forgot your password?</Text></Pressable>
+            </Link>
           </View>
         </View>
 
-        <Text style={s.title}>Welcome back</Text>
-        <Text style={s.lede}>
-          Sign in to continue an application, upload outstanding documents, or check where yours has got to.
-        </Text>
-
-        {/* Hidden once they have tried again, so an older notice does not sit
-            above a fresh error and confuse which one is current. */}
-        {notice && !error ? <Alert tone={notice.tone}>{notice.text}</Alert> : null}
-        {error ? <Alert tone="error">{error}</Alert> : null}
-
-        <Field
-          label="Email address or cell number"
-          value={identifier}
-          onChangeText={(v) => { setIdentifier(v); if (notice) clearSignOutReason(); }}
-          placeholder="you@example.com or 082 123 4567"
-          keyboardType="email-address"
-          textContentType="username"
-          autoComplete="username"
-          returnKeyType="next"
-        />
-
-        <Field
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Your password"
-          secureTextEntry={!show}
-          textContentType="password"
-          autoComplete="password"
-          returnKeyType="go"
-          onSubmitEditing={submit}
-        />
-
-        {/*
-          A reveal toggle rather than an eye icon inside the field. On a phone
-          keyboard, mistyping a password you cannot see is the most common reason
-          a sign-in fails — and an icon overlapping the text is a smaller target
-          than a labelled line of text beneath it.
-        */}
-        <Pressable onPress={() => setShow((v) => !v)} hitSlop={10} style={s.reveal}>
-          <Text style={s.revealText}>{show ? 'Hide password' : 'Show password'}</Text>
-        </Pressable>
-
-        <Button title="Sign in" onPress={submit} loading={busy} style={s.submit} />
-
-        <View style={s.footer}>
-          <Link href="/(auth)/register" asChild>
-            <Pressable hitSlop={8}><Text style={s.link}>Create an account</Text></Pressable>
-          </Link>
-          <Text style={s.dot}>·</Text>
-          <Link href="/(auth)/forgot-password" asChild>
-            <Pressable hitSlop={8}><Text style={s.link}>Forgot your password?</Text></Pressable>
-          </Link>
+        <View style={s.note}>
+          <Icon name="shield" size={16} color={colors.inkMute} />
+          <Hint>
+            Applying is free. The municipality will never ask you to pay for an indigent application.
+          </Hint>
         </View>
-
-        <Hint>
-          Applying is free. The municipality will never ask you to pay for an indigent application.
-        </Hint>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -130,30 +149,45 @@ export default function SignIn() {
 
 const s = StyleSheet.create({
   flex: { flex: 1 },
-  content: { padding: space.lg, paddingBottom: space.xxl * 2, backgroundColor: colors.canvas, flexGrow: 1 },
+  content: { paddingBottom: space.xxl * 2, backgroundColor: colors.canvas, flexGrow: 1 },
 
-  brand: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.xxl },
-  mark: {
-    width: 44, height: 44, borderRadius: radius.md,
-    backgroundColor: colors.brand, alignItems: 'center', justifyContent: 'center',
+  head: { paddingHorizontal: space.lg, paddingBottom: space.xxl + space.lg },
+  back: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: space.lg, alignSelf: 'flex-start' },
+  backText: { fontSize: type.label, fontFamily: font.medium, color: colors.slate300 },
+
+  title: {
+    fontSize: type.displaySmall, fontFamily: font.extraBold, color: colors.white,
+    letterSpacing: tracking.display, marginTop: space.xl,
   },
-  markText: { color: colors.white, fontWeight: weight.bold, fontSize: type.body, letterSpacing: 0.5 },
-  brandName: { fontSize: type.h3, fontWeight: weight.semibold, color: colors.ink },
-  brandSub: { fontSize: type.hint, color: colors.inkMute, textTransform: 'uppercase', letterSpacing: 0.6 },
+  lede: {
+    fontSize: type.label, fontFamily: font.regular, color: colors.slate300,
+    lineHeight: 22, marginTop: space.sm,
+  },
 
-  title: { fontSize: type.h1, fontWeight: weight.semibold, color: colors.ink, marginBottom: space.sm },
-  lede: { fontSize: type.body, color: colors.inkSoft, lineHeight: 24, marginBottom: space.lg },
+  card: {
+    marginHorizontal: space.base,
+    marginTop: -space.xxl,
+    padding: space.base,
+    backgroundColor: colors.surface,
+    borderWidth: 1, borderColor: colors.line, borderRadius: radius.lg,
+    ...shadow.md,
+  },
 
-  passwordRow: { flexDirection: 'row', alignItems: 'center' },
-  reveal: { alignSelf: 'flex-start', marginTop: -space.sm, marginBottom: space.base },
-  revealText: { fontSize: type.hint, color: colors.brand, fontWeight: weight.medium },
-
-  submit: { marginTop: space.sm },
+  reveal: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    alignSelf: 'flex-start', marginTop: -space.sm, marginBottom: space.base,
+  },
+  revealText: { fontSize: type.hint, fontFamily: font.semibold, color: colors.brand },
 
   footer: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: space.sm, marginTop: space.lg, marginBottom: space.base,
+    gap: space.sm, marginTop: space.lg,
   },
-  link: { fontSize: type.label, color: colors.brand, fontWeight: weight.medium },
-  dot: { color: colors.slate400 },
+  link: { fontSize: type.label, fontFamily: font.semibold, color: colors.brand },
+  dot: { color: colors.slate400, fontFamily: font.regular },
+
+  note: {
+    flexDirection: 'row', gap: space.sm, alignItems: 'flex-start',
+    paddingHorizontal: space.lg, paddingTop: space.lg,
+  },
 });

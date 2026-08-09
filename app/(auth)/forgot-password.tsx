@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Alert, Button, Field, Panel, Screen, H1, Muted } from '../../src/components/ui';
 import api, { friendlyError } from '../../src/services/api';
-import { colors, space, type, weight } from '../../src/theme';
+import { colors, font, space, type } from '../../src/theme';
 
 /**
  * Reset a forgotten password with a code sent by SMS.
@@ -102,5 +102,5 @@ export default function ForgotPassword() {
 const s = StyleSheet.create({
   panel: { marginTop: space.base },
   back: { alignSelf: 'center', marginTop: space.sm },
-  link: { fontSize: type.label, color: colors.brand, fontWeight: weight.medium },
+  link: { fontSize: type.label, color: colors.brand, fontFamily: font.medium },
 });

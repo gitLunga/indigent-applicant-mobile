@@ -5,7 +5,7 @@ import Stepper from '../../../src/components/Stepper';
 import { Actions, Alert, Button, Hint, Panel, Screen, SectionTitle } from '../../../src/components/ui';
 import { useDraft } from '../../../src/services/draft';
 import api, { friendlyError } from '../../../src/services/api';
-import { colors, radius, space, type, weight } from '../../../src/theme';
+import { colors, font, radius, space, type } from '../../../src/theme';
 
 const CODE_LENGTH = 6;
 
@@ -99,7 +99,7 @@ export default function Verify() {
       <Stepper current="verify" onJump={() => router.back()} />
       <Screen>
         <Panel>
-          <SectionTitle>Verify your cell number</SectionTitle>
+          <SectionTitle icon="phone">Verify your cell number</SectionTitle>
 
           <Text style={s.lede}>
             The municipality sends every update about your application by SMS, so we need to know this number
@@ -192,7 +192,7 @@ export default function Verify() {
 }
 
 const s = StyleSheet.create({
-  lede: { fontSize: type.body, color: colors.inkSoft, lineHeight: 24, marginBottom: space.base },
+  lede: { fontFamily: font.regular, fontSize: type.body, color: colors.inkSoft, lineHeight: 24, marginBottom: space.base },
 
   numberRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -200,10 +200,10 @@ const s = StyleSheet.create({
     backgroundColor: colors.slate50,
     borderWidth: 1, borderColor: colors.line, borderRadius: radius.md,
   },
-  number: { fontSize: type.body, fontWeight: weight.semibold, color: colors.ink },
-  change: { fontSize: type.hint, color: colors.brand, fontWeight: weight.medium },
+  number: { fontSize: type.body, fontFamily: font.semibold, color: colors.ink },
+  change: { fontSize: type.hint, color: colors.brand, fontFamily: font.medium },
 
-  label: { fontSize: type.label, fontWeight: weight.medium, color: colors.slate700, marginBottom: space.md },
+  label: { fontSize: type.label, fontFamily: font.medium, color: colors.slate700, marginBottom: space.md },
 
   boxes: { flexDirection: 'row', gap: space.sm, marginBottom: space.base },
   box: {
@@ -214,7 +214,7 @@ const s = StyleSheet.create({
   },
   boxActive: { borderColor: colors.brand },
   boxFilled: { borderColor: colors.navy600, backgroundColor: colors.slate50 },
-  boxText: { fontSize: 22, fontWeight: weight.semibold, color: colors.ink },
+  boxText: { fontSize: 22, fontFamily: font.semibold, color: colors.ink },
 
   // Present for the keyboard and autofill, never seen.
   hiddenInput: { position: 'absolute', opacity: 0, height: 1, width: 1 },

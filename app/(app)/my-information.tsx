@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
-  Alert, Button, Choice, Field, Hint, Loading, Panel, Screen, SectionTitle,
+  Alert, Button, Field, Hint, Loading, Panel, Screen, SectionTitle, Select,
 } from '../../src/components/ui';
 import api, { friendlyError } from '../../src/services/api';
-import { colors, radius, space, type, weight } from '../../src/theme';
+import { colors, font, radius, space, type } from '../../src/theme';
 
 /**
  * "What do you know about me?"
@@ -95,7 +95,7 @@ export default function MyInformation() {
 
       {record?.about ? (
         <Panel>
-          <SectionTitle>Who we think you are</SectionTitle>
+          <SectionTitle icon="user">Who we think you are</SectionTitle>
           {Object.entries(record.about)
             .filter(([, v]) => v !== null && v !== undefined && v !== '')
             .map(([key, value]) => (
@@ -200,14 +200,14 @@ export default function MyInformation() {
 
       {/* --- Asking for a change ------------------------------------- */}
       <Panel>
-        <SectionTitle>Ask us to change something</SectionTitle>
+        <SectionTitle icon="edit">Ask us to change something</SectionTitle>
 
         {sent ? <Alert tone="success">{sent}</Alert> : null}
 
-        <Choice
+        <Select
           label="What would you like us to do?"
           value={type as never}
-          options={REQUEST_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+          options={REQUEST_TYPES}
           onChange={(v) => setType(v)}
         />
 
@@ -239,7 +239,7 @@ export default function MyInformation() {
 
       {requests.length ? (
         <Panel>
-          <SectionTitle>Requests you have made</SectionTitle>
+          <SectionTitle icon="applications">Requests you have made</SectionTitle>
           {requests.map((r) => (
             <View key={r.id} style={s.requestRow}>
               <Text style={s.value}>{r.request}</Text>
@@ -253,7 +253,7 @@ export default function MyInformation() {
 
       {record?.yourRights?.length ? (
         <Panel>
-          <SectionTitle>Your rights</SectionTitle>
+          <SectionTitle icon="shield">Your rights</SectionTitle>
           {record.yourRights.map((right, i) => <Text key={i} style={s.bullet}>{right}</Text>)}
         </Panel>
       ) : null}
@@ -263,21 +263,21 @@ export default function MyInformation() {
 
 const s = StyleSheet.create({
   row: { paddingVertical: space.sm, borderBottomWidth: 1, borderBottomColor: colors.line },
-  key: { fontSize: type.small, color: colors.inkMute, textTransform: 'uppercase', letterSpacing: 0.4 },
-  value: { fontSize: type.body, color: colors.ink, marginTop: 2, lineHeight: 22 },
-  from: { fontSize: type.hint, color: colors.inkMute },
+  key: { fontFamily: font.semibold, fontSize: type.small, color: colors.inkMute, textTransform: 'uppercase', letterSpacing: 0.4 },
+  value: { fontFamily: font.regular, fontSize: type.body, color: colors.ink, marginTop: 2, lineHeight: 22 },
+  from: { fontFamily: font.regular, fontSize: type.hint, color: colors.inkMute },
 
   subhead: {
-    fontSize: type.label, fontWeight: weight.semibold, color: colors.ink,
+    fontSize: type.label, fontFamily: font.semibold, color: colors.ink,
     marginTop: space.base, marginBottom: space.sm,
   },
-  muted: { fontSize: type.hint, color: colors.inkMute },
-  bullet: { fontSize: type.label, color: colors.inkSoft, lineHeight: 22, marginBottom: space.xs },
+  muted: { fontFamily: font.regular, fontSize: type.hint, color: colors.inkMute },
+  bullet: { fontFamily: font.regular, fontSize: type.label, color: colors.inkSoft, lineHeight: 22, marginBottom: space.xs },
 
   requestRow: {
     padding: space.md, marginBottom: space.sm,
     backgroundColor: colors.slate50,
     borderWidth: 1, borderColor: colors.line, borderRadius: radius.md,
   },
-  answer: { fontSize: type.hint, color: colors.inkSoft, marginTop: space.xs, lineHeight: 19 },
+  answer: { fontFamily: font.regular, fontSize: type.hint, color: colors.inkSoft, marginTop: space.xs, lineHeight: 19 },
 });

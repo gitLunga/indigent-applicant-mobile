@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { Alert, Badge, Hint, Loading, Panel, Screen, SectionTitle } from '../../../src/components/ui';
 import api, { friendlyError } from '../../../src/services/api';
 import { dateZA, STATUS_LABEL } from '../../../src/lib/application';
-import { colors, radius, space, statusTone, type, weight } from '../../../src/theme';
+import { colors, font, space, statusTone, type } from '../../../src/theme';
 
 /**
  * One application, as the household is allowed to see it.
@@ -56,14 +56,14 @@ export default function ApplicationDetail() {
 
       {timeline.reviewNotes ? (
         <Panel>
-          <SectionTitle>What the municipality said</SectionTitle>
+          <SectionTitle icon="info">What the municipality said</SectionTitle>
           <Text style={s.notes}>{timeline.reviewNotes}</Text>
         </Panel>
       ) : null}
 
       {Array.isArray(timeline.stages) && timeline.stages.length ? (
         <Panel>
-          <SectionTitle>Where it has been</SectionTitle>
+          <SectionTitle icon="applications">Where it has been</SectionTitle>
           {timeline.stages.map((stage: any, i: number) => (
             <View key={stage.key ?? i} style={s.stage}>
               <View style={[s.pip, stage.done && s.pipDone, stage.current && s.pipNow]} />
@@ -78,7 +78,7 @@ export default function ApplicationDetail() {
 
       {Array.isArray(timeline.documents) && timeline.documents.length ? (
         <Panel>
-          <SectionTitle>Your documents</SectionTitle>
+          <SectionTitle icon="file">Your documents</SectionTitle>
           {timeline.documents.map((d: any, i: number) => (
             <View key={i} style={s.docRow}>
               <Text style={s.docName}>{d.name ?? d.label}</Text>
@@ -92,7 +92,7 @@ export default function ApplicationDetail() {
 
       {Array.isArray(timeline.events) && timeline.events.length ? (
         <Panel>
-          <SectionTitle>What has happened</SectionTitle>
+          <SectionTitle icon="calendar">What has happened</SectionTitle>
           {timeline.events.map((e: any, i: number) => (
             <View key={i} style={s.event}>
               <Text style={s.eventText}>{e.label ?? e.what ?? e.action}</Text>
@@ -113,27 +113,27 @@ export default function ApplicationDetail() {
 const s = StyleSheet.create({
   flex: { flex: 1 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm, marginBottom: space.md },
-  reference: { fontSize: type.hint, color: colors.inkMute, fontWeight: weight.medium },
+  reference: { fontSize: type.hint, color: colors.inkMute, fontFamily: font.medium },
   dates: { gap: space.xs },
-  date: { fontSize: type.label, color: colors.inkSoft },
-  notes: { fontSize: type.body, color: colors.inkSoft, lineHeight: 24 },
+  date: { fontFamily: font.regular, fontSize: type.label, color: colors.inkSoft },
+  notes: { fontFamily: font.regular, fontSize: type.body, color: colors.inkSoft, lineHeight: 24 },
 
   stage: { flexDirection: 'row', gap: space.md, marginBottom: space.md },
   pip: { width: 12, height: 12, borderRadius: 6, marginTop: 5, backgroundColor: colors.slate300 },
   pipDone: { backgroundColor: colors.success },
   pipNow: { backgroundColor: colors.brand },
-  stageName: { fontSize: type.body, color: colors.ink },
-  stageNow: { fontWeight: weight.semibold },
-  stageNote: { fontSize: type.hint, color: colors.inkMute, marginTop: 2, lineHeight: 18 },
+  stageName: { fontFamily: font.semibold, fontSize: type.body, color: colors.ink },
+  stageNow: { fontFamily: font.semibold },
+  stageNote: { fontFamily: font.regular, fontSize: type.hint, color: colors.inkMute, marginTop: 2, lineHeight: 18 },
 
   docRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     gap: space.sm, paddingVertical: space.sm,
     borderBottomWidth: 1, borderBottomColor: colors.line,
   },
-  docName: { flex: 1, fontSize: type.label, color: colors.ink },
+  docName: { fontFamily: font.medium, flex: 1, fontSize: type.label, color: colors.ink },
 
   event: { paddingVertical: space.sm, borderBottomWidth: 1, borderBottomColor: colors.line },
-  eventText: { fontSize: type.label, color: colors.ink },
-  eventWhen: { fontSize: type.small, color: colors.inkMute, marginTop: 2 },
+  eventText: { fontFamily: font.regular, fontSize: type.label, color: colors.ink },
+  eventWhen: { fontFamily: font.regular, fontSize: type.small, color: colors.inkMute, marginTop: 2 },
 });

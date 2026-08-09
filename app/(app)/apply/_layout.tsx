@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import { DraftProvider } from '../../../src/services/draft';
-import { colors, type, weight } from '../../../src/theme';
+import { colors, font, type } from '../../../src/theme';
 
 /**
  * The wizard.
@@ -17,7 +17,7 @@ export default function ApplyLayout() {
         screenOptions={{
           headerStyle: { backgroundColor: colors.navy900 },
           headerTintColor: colors.white,
-          headerTitleStyle: { fontSize: type.h3, fontWeight: weight.semibold },
+          headerTitleStyle: { fontSize: type.h3, fontFamily: font.semibold },
           contentStyle: { backgroundColor: colors.canvas },
           title: 'Apply for support',
         }}

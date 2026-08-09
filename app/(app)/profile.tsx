@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Alert, Button, Field, Hint, Panel, Screen, SectionTitle } from '../../src/components/ui';
 import api, { friendlyError } from '../../src/services/api';
 import { useAuth } from '../../src/services/auth';
-import { colors, space, type, weight } from '../../src/theme';
+import { colors, font, space, type } from '../../src/theme';
 
 /** The household's own details, and the way to their privacy rights. */
 export default function Profile() {
@@ -34,7 +34,7 @@ export default function Profile() {
   return (
     <Screen>
       <Panel>
-        <SectionTitle>Your details</SectionTitle>
+        <SectionTitle icon="user">Your details</SectionTitle>
         {error ? <Alert tone="error">{error}</Alert> : null}
         {saved ? <Alert tone="success">Saved.</Alert> : null}
 
@@ -52,7 +52,7 @@ export default function Profile() {
       </Panel>
 
       <Panel>
-        <SectionTitle>Security</SectionTitle>
+        <SectionTitle icon="lock">Security</SectionTitle>
 
         {/* Somebody noticing a sign-in that was not theirs is the cheapest
             account-compromise detection there is, and it costs one line. */}
@@ -68,7 +68,7 @@ export default function Profile() {
       </Panel>
 
       <Panel>
-        <SectionTitle>Your privacy</SectionTitle>
+        <SectionTitle icon="shield">Your privacy</SectionTitle>
         <Text style={s.line}>
           You can see everything the municipality holds about you, and ask for anything wrong to be corrected.
         </Text>
@@ -84,7 +84,7 @@ export default function Profile() {
 }
 
 const s = StyleSheet.create({
-  line: { fontSize: type.label, color: colors.inkSoft, lineHeight: 21, marginBottom: space.md },
+  line: { fontFamily: font.regular, fontSize: type.label, color: colors.inkSoft, lineHeight: 21, marginBottom: space.md },
   signOut: { alignSelf: 'center', paddingVertical: space.base },
-  signOutText: { fontSize: type.label, color: colors.brand, fontWeight: weight.medium },
+  signOutText: { fontSize: type.label, color: colors.brand, fontFamily: font.medium },
 });
