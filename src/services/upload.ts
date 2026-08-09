@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 // SDK 57, and `useImageManipulator` is a hook — no use inside an async handler
 // where the URI only exists once the picker has returned.
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
-import { API_BASE_URL, loadToken } from './api';
+import api, { friendlyError } from './api';
 
 /**
  * Getting a supporting document off the phone and onto the server.
@@ -194,20 +194,41 @@ export async function uploadDocument({
   } as never);
 
   /**
-   * Sent with fetch rather than the axios instance.
+   * Sent with axios — which goes through XMLHttpRequest — and deliberately not
+   * with `fetch`.
    *
-   * axios on React Native does not always leave a FormData body untouched, and
-   * setting Content-Type by hand removes the multipart boundary the server
-   * needs. fetch with no Content-Type lets the platform generate it. The token
-   * is attached the same way the interceptor would.
+   * `fetch` is no longer React Native's. Expo replaces the global with its
+   * WinterCG implementation, which assembles the multipart body in JavaScript
+   * out of `Blob`s and has no way to read a `file://` URI. The part appended
+   * above is neither a Blob nor something with `bytes()`, so that implementation
+   * rejects it outright — "Unsupported FormDataPart implementation" — before a
+   * single byte reaches the network.
+   *
+   * XMLHttpRequest hands the parts to the native networking layer instead, which
+   * streams the file straight off disk. That is also why it is the right choice
+   * regardless of the bug: a 10MB scan never has to sit in the JavaScript heap,
+   * which matters on the cheap phones this app is written for.
+   *
+   * No Content-Type is set here on purpose. axios passes a FormData body through
+   * untouched and adds no type of its own, which leaves the native layer free to
+   * generate `multipart/form-data` with the boundary the server needs — set it
+   * by hand and the boundary goes missing.
    */
-  const token = await loadToken();
-  const response = await fetch(`${API_BASE_URL}/documents/${applicationId}/upload`, {
-    method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    body,
-  });
-
-  const data = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(data?.message || 'The upload was refused.');
+  try {
+    await api.post(`/documents/${applicationId}/upload`, body, {
+      /**
+       * The instance's 45 seconds is right for ordinary requests and wrong for
+       * this one. Ten megabytes over a weak connection legitimately takes
+       * minutes, and cutting that off would fail uploads that were going to
+       * succeed — the one thing worse than a slow upload is a slow upload that
+       * is thrown away at the end.
+       */
+      timeout: 180000,
+    });
+  } catch (error) {
+    // The API writes its own wording for applicants; `friendlyError` prefers it
+    // over anything invented here, and falls back to plain language rather than
+    // axios's "Request failed with status code 400".
+    throw new Error(friendlyError(error, 'The upload was refused.'));
+  }
 }
