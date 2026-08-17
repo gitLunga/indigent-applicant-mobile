@@ -18,7 +18,6 @@ import { colors, font, radius, space, tracking, type } from '../theme';
 
 export const WIZARD_STEPS = [
   { key: 'particulars', label: 'Applicant particulars', short: 'You' },
-  { key: 'verify', label: 'Verify your number', short: 'Verify' },
   { key: 'property', label: 'Property particulars', short: 'Property' },
   { key: 'income', label: 'Household and income', short: 'Income' },
   { key: 'general', label: 'General information', short: 'General' },

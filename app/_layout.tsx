@@ -80,7 +80,18 @@ function Gate() {
        * anything else works — the API refuses every other route until it is, so
        * there is no point rendering a screen whose every request will fail.
        */
-      router.replace(user.mustChangePassword ? '/(app)/change-password' : '/(app)/dashboard');
+      /**
+       * Two gates, in the order the API enforces them.
+       *
+       * A password issued by staff and sent over SMS has to be replaced before
+       * anything else works, and an applicant's cell number has to be verified
+       * before they can start an application. The API refuses every other route
+       * in both cases, so rendering a screen whose every request will fail only
+       * wastes the applicant's data.
+       */
+      if (user.mustChangePassword) router.replace('/(app)/change-password');
+      else if (user.role === 'APPLICANT' && !user.isVerified) router.replace('/(app)/verify');
+      else router.replace('/(app)/dashboard');
     }
   }, [user, restoring, segments, pathname, router]);
 

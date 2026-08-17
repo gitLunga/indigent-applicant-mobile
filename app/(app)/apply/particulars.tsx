@@ -4,12 +4,13 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import Stepper from '../../../src/components/Stepper';
 import {
-  Actions, Alert, Button, CheckRow, Choice, Field, Hint, Loading, Panel, Screen, SectionTitle, Select,
+  Actions, Alert, Badge, Button, CheckRow, Choice, Field, Hint, Loading, Panel, Screen, SectionTitle, Select,
 } from '../../../src/components/ui';
 import { useDraft } from '../../../src/services/draft';
+import { useAuth } from '../../../src/services/auth';
 import api, { friendlyError } from '../../../src/services/api';
 import {
-  cellNumberProblem, identityFromIdNumber,
+  identityFromIdNumber,
   idNumberProblem, MARITAL_STATUS, postalProblems, SEX, sexFromIdNumber, TITLES,
 } from '../../../src/lib/application';
 import { colors, font, radius, space, type } from '../../../src/theme';
@@ -35,6 +36,7 @@ const TITLE_OPTIONS = [
 export default function Particulars() {
   const router = useRouter();
   const { loading, error, form, set, save, applicationId, completed } = useDraft();
+  const { user } = useAuth();
 
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState(false);
@@ -55,7 +57,6 @@ export default function Particulars() {
   const identity = useMemo(() => identityFromIdNumber(form.idNumber), [form.idNumber]);
   const derivedSex = useMemo(() => sexFromIdNumber(form.idNumber), [form.idNumber]);
   const idProblem = idNumberProblem(form.idNumber);
-  const cellProblem = cellNumberProblem(form.cellNumber);
   const postalIssues = postalProblems(form);
 
 
@@ -65,13 +66,11 @@ export default function Particulars() {
     if (!form.surname.trim()) found.push('your surname');
     if (!form.names.trim()) found.push('your name');
     if (!form.idNumber.trim()) found.push('your ID number');
-    if (!form.cellNumber.trim()) found.push('your cell number');
     if (!form.residentialAddress.trim()) found.push('where you live');
-    if (!form.employmentStatus) found.push('whether you are employed');
     return found;
   }, [form]);
 
-  const problem = idProblem || cellProblem || postalIssues[0] || null;
+  const problem = idProblem || postalIssues[0] || null;
 
   /**
    * Capture the property's location from the device.
@@ -138,7 +137,7 @@ export default function Particulars() {
     setSaving(true);
     const ok = await save(2);
     setSaving(false);
-    if (ok) router.push('/(app)/apply/verify');
+    if (ok) router.push('/(app)/apply/property');
   };
 
   if (loading) return <Screen scroll={false}><Loading label="Opening your application…" /></Screen>;
@@ -255,15 +254,27 @@ export default function Particulars() {
             onChange={(v) => set('maritalStatus', v)}
           />
 
+          {/*
+            Shown, not asked.
+
+            The number was verified before this application could be started, so
+            re-typing it here would let a verified account send an application
+            carrying a different, unverified number — which is the hole the whole
+            change was meant to close. Changing it happens on the profile, where
+            it triggers a new code.
+          */}
           <Field
             label="Cell number"
-            value={form.cellNumber}
-            onChangeText={(v) => set('cellNumber', v)}
-            placeholder="082 123 4567"
-            keyboardType="phone-pad"
-            error={cellProblem}
-            hint="You will verify this on the next step. The municipality sends updates here."
-          />
+            value={user?.cellNumber || form.cellNumber}
+            editable={false}
+            hint={user?.isVerified
+              ? 'Verified. The municipality sends every update to this number.'
+              : 'Not yet verified.'}
+          >
+            <Badge tone={user?.isVerified ? 'approved' : 'pending'}>
+              {user?.isVerified ? 'Verified' : 'Not verified'}
+            </Badge>
+          </Field>
         </Panel>
 
         {/* --- Where you live ------------------------------------------- */}

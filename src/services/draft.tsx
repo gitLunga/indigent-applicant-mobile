@@ -171,7 +171,6 @@ export function DraftProvider({ children }: { children: ReactNode }) {
           ...formFromApplication(saved),
           // Local-only flags the server knows nothing about.
           sexTouched: current.sexTouched,
-          cellVerified: current.cellVerified,
         }));
       }
       return true;

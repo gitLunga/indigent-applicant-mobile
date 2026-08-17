@@ -45,7 +45,12 @@ export default function Register() {
       setError('Please give an email address.');
       return;
     }
+    // Both are required now. The cell number is how every decision reaches the
+    // household and has to be verified before an application can be started;
+    // the ID number is what the register is keyed on.
+    if (!form.idNumber.trim()) { setError('Please give your 13-digit ID number.'); return; }
     if (idProblem) { setError(idProblem); return; }
+    if (!form.cellNumber.trim()) { setError('Please give your cell number. We send a verification code to it.'); return; }
     if (cellProblem) { setError(cellProblem); return; }
     if (form.password !== form.confirm) {
       setError('The two passwords do not match.');
@@ -58,8 +63,8 @@ export default function Register() {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim().toLowerCase(),
-        cellNumber: form.cellNumber.trim() || undefined,
-        idNumber: form.idNumber.replace(/\D/g, '') || undefined,
+        cellNumber: form.cellNumber.trim(),
+        idNumber: form.idNumber.replace(/\D/g, ''),
         password: form.password,
       });
       // The gate in the root layout takes it from here.
@@ -108,7 +113,7 @@ export default function Register() {
           placeholder="082 123 4567"
           keyboardType="phone-pad"
           error={cellProblem}
-          hint="The municipality sends updates about your application to this number."
+          hint="We send a verification code here. You will need it before you can apply."
         />
 
         <Field

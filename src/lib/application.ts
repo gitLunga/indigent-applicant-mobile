@@ -100,7 +100,6 @@ export type ApplicationForm = {
   sexTouched: boolean;
   maritalStatus: string;
   cellNumber: string;
-  cellVerified: boolean;
 
   residentialAddress: string;
   addressLatitude: string;
@@ -171,7 +170,7 @@ export type ApplicationForm = {
  */
 export const emptyForm: ApplicationForm = {
   title: '', surname: '', names: '', idNumber: '', sex: '', sexTouched: false,
-  maritalStatus: '', cellNumber: '', cellVerified: false,
+  maritalStatus: '', cellNumber: '',
   residentialAddress: '', addressLatitude: '', addressLongitude: '',
   addressFormatted: '', addressSource: '', addressAccuracyM: '',
   postalSameAsResidential: false, postalLine1: '', postalLine2: '',
@@ -210,7 +209,6 @@ export function formFromApplication(a: Record<string, any>): ApplicationForm {
     sexTouched: Boolean(a.sex),
     maritalStatus: str(a.maritalStatus),
     cellNumber: str(a.cellNumber),
-    cellVerified: Boolean(a.cellVerified),
 
     residentialAddress: str(a.residentialAddress),
     addressLatitude: str(a.addressLatitude),
@@ -476,7 +474,7 @@ export function buildPayload(form: ApplicationForm, currentStep: number): Record
  * it" — the API remains the authority, and it says so plainly when it refuses.
  */
 export type WizardStepKey =
-  'particulars' | 'verify' | 'property' | 'income' | 'general' | 'documents';
+  'particulars' | 'property' | 'income' | 'general' | 'documents';
 
 export function completedSteps(
   form: ApplicationForm,
@@ -492,7 +490,6 @@ export function completedSteps(
   }
 
   // The only step that can be skipped, so it is complete only when truly done.
-  if (form.cellVerified) done.push('verify');
 
   if (filled(form.tenure) && form.ownsOtherProperty !== null) done.push('property');
 
