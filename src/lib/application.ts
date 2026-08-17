@@ -93,7 +93,7 @@ export type ApplicationForm = {
   // Applicant particulars
   title: string;
   surname: string;
-  names: string;
+  fullName: string;
   idNumber: string;
   sex: string;
   /** Local only, never sent: stops the ID number overwriting a chosen answer. */
@@ -169,7 +169,7 @@ export type ApplicationForm = {
  * functioning questions that is health information nobody consented to.
  */
 export const emptyForm: ApplicationForm = {
-  title: '', surname: '', names: '', idNumber: '', sex: '', sexTouched: false,
+  title: '', surname: '', fullName: '', idNumber: '', sex: '', sexTouched: false,
   maritalStatus: '', cellNumber: '',
   residentialAddress: '', addressLatitude: '', addressLongitude: '',
   addressFormatted: '', addressSource: '', addressAccuracyM: '',
@@ -199,7 +199,9 @@ export function formFromApplication(a: Record<string, any>): ApplicationForm {
     ...emptyForm,
     title: str(a.title),
     surname: str(a.surname),
-    names: str(a.names),
+    // Falls back to the old field for drafts written before the migration, so
+    // nobody opens their application to find their name gone.
+    fullName: str(a.fullName) || str(a.names),
     idNumber: str(a.idNumber),
     // Falls back to the ID number for drafts started before sex was asked
     // explicitly, so an old draft opens with the field already answered.
@@ -277,6 +279,26 @@ export function formFromApplication(a: Record<string, any>): ApplicationForm {
  * Shown as a default the applicant can change. The server derives it too, and an
  * explicit answer wins there — so this is a convenience, never the truth.
  */
+/**
+ * Initials from whatever given names were typed.
+ *
+ * Mirrors src/lib/names.js on the server. Derived rather than asked for, so the
+ * two can never disagree. A hyphenated name gives an initial per part, as it is
+ * written on an identity document, and the first *letter* is taken rather than
+ * the first character — people bracket a preferred name, and "Nomsa (Thandiwe)"
+ * should still give N.T.
+ */
+export function initialsOf(fullName: string): string {
+  return String(fullName || '')
+    .trim()
+    .split(/\s+/)
+    .flatMap((part) => part.split('-'))
+    .map((part) => [...part].find((ch) => /\p{L}/u.test(ch)))
+    .filter(Boolean)
+    .map((ch) => `${(ch as string).toUpperCase()}.`)
+    .join('');
+}
+
 export function sexFromIdNumber(idNumber: string): string {
   const digits = String(idNumber || '').replace(/\D/g, '');
   if (digits.length !== 13) return '';
@@ -402,7 +424,7 @@ export function buildPayload(form: ApplicationForm, currentStep: number): Record
   const payload: Record<string, unknown> = { currentStep };
 
   const strings = [
-    'title', 'maritalStatus', 'surname', 'names', 'idNumber', 'sex', 'cellNumber',
+    'title', 'maritalStatus', 'surname', 'fullName', 'idNumber', 'sex', 'cellNumber',
     'residentialAddress', 'employerName', 'employerAddress', 'workTelNumber',
     'employmentStatus', 'waterMeterNumber', 'electricityMeterNumber',
     'wardNumber', 'municipalAccountNumber', 'eskomAccountNumber',
@@ -484,8 +506,11 @@ export function completedSteps(
 
   const filled = (v: string) => Boolean(v && v.trim());
 
-  if (filled(form.surname) && filled(form.names) && filled(form.idNumber)
-    && filled(form.cellNumber) && filled(form.residentialAddress) && filled(form.employmentStatus)) {
+  // The cell number and employment status are no longer asked on this step —
+  // the number comes from the verified account, and employment is derived from
+  // the income answers — so neither can gate the step being complete.
+  if (filled(form.surname) && filled(form.fullName) && filled(form.idNumber)
+    && filled(form.residentialAddress)) {
     done.push('particulars');
   }
 

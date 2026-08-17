@@ -36,6 +36,12 @@ export default function Income() {
 
   useEffect(() => { refreshHousehold(); }, [refreshHousehold]);
 
+  // +1 throughout: the applicant lives there too but is not a row, because
+  // their details *are* the application.
+  const declaredPeople = Number(form.peopleOnProperty) || 0;
+  const listedPeople = household.length + 1;
+  const rollMatches = declaredPeople > 0 && listedPeople === declaredPeople;
+
 
 
   const blocking = useMemo(() => {
@@ -138,6 +144,25 @@ export default function Income() {
           </Hint>
 
           {memberError ? <Alert tone="error">{memberError}</Alert> : null}
+
+          {/*
+            The roll against what was declared.
+
+            peopleOnProperty is a number somebody types; this is a list they
+            build, and nothing reconciled them — so an application could say five
+            people and name two. Income per person is half the means test and is
+            computed from the typed number, so a mismatch is not untidiness. Shown
+            live here and refused at submission.
+          */}
+          {declaredPeople > 0 ? (
+            <Alert tone={rollMatches ? 'success' : 'info'}>
+              {rollMatches
+                ? `All ${declaredPeople} people on the property are listed.`
+                : listedPeople < declaredPeople
+                  ? `${listedPeople} of ${declaredPeople} listed. Add ${declaredPeople - listedPeople} more before you can submit.`
+                  : `${listedPeople} listed, but you said ${declaredPeople} live here. Correct whichever is wrong.`}
+            </Alert>
+          ) : null}
 
           {household.length === 0 ? (
             <Text style={s.empty}>Nobody added yet.</Text>

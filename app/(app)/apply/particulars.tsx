@@ -10,7 +10,7 @@ import { useDraft } from '../../../src/services/draft';
 import { useAuth } from '../../../src/services/auth';
 import api, { friendlyError } from '../../../src/services/api';
 import {
-  identityFromIdNumber,
+  identityFromIdNumber, initialsOf,
   idNumberProblem, MARITAL_STATUS, postalProblems, SEX, sexFromIdNumber, TITLES,
 } from '../../../src/lib/application';
 import { colors, font, radius, space, type } from '../../../src/theme';
@@ -64,7 +64,7 @@ export default function Particulars() {
   const blocking = useMemo(() => {
     const found: string[] = [];
     if (!form.surname.trim()) found.push('your surname');
-    if (!form.names.trim()) found.push('your name');
+    if (!form.fullName.trim()) found.push('your name');
     if (!form.idNumber.trim()) found.push('your ID number');
     if (!form.residentialAddress.trim()) found.push('where you live');
     return found;
@@ -196,8 +196,23 @@ export default function Particulars() {
           <Field label="Surname" value={form.surname} onChangeText={(v) => set('surname', v)}
             placeholder="Mthembu" autoCapitalize="words" />
 
-          <Field label="Name(s)" value={form.names} onChangeText={(v) => set('names', v)}
-            placeholder="Grace Nomsa" autoCapitalize="words" />
+          {/*
+            Every given name, in one field.
+
+            "Name(s)" was filled in inconsistently — one name, all of them,
+            sometimes the whole name including the surname. Somebody with three
+            given names has a right to have all three on a municipal record, and
+            the initials are derived from what is typed rather than asked for
+            separately, so the two can never disagree.
+          */}
+          <Field
+            label="Full name"
+            value={form.fullName}
+            onChangeText={(v: string) => set('fullName', v)}
+            placeholder="Grace Nomsa Thandiwe"
+            autoCapitalize="words"
+            hint={initialsOf(form.fullName) ? `Initials: ${initialsOf(form.fullName)}` : 'All your names, as on your ID.'}
+          />
 
           <Field
             label="ID number"
