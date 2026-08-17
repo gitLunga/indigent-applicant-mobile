@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon, { IconName } from './Icon';
+import UploadProgress from './UploadProgress';
 import { Alert, Badge, Hint, Panel, SectionTitle } from './ui';
 import { DocumentRow } from '../services/draft';
 import {
-  fileKind, PickedFile, pickFile, pickPhoto, takePhoto, uploadDocument,
+  fileKind, PickedFile, pickFile, pickPhoto, takePhoto, uploadDocument, UploadCancelled,
 } from '../services/upload';
 import { colors, font, radius, space, tracking, type } from '../theme';
 
@@ -68,6 +69,10 @@ export default function DocumentSlots({
   const insets = useSafeAreaInsets();
   const [picking, setPicking] = useState<DocumentRow | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
+  /** True bytes for the slot being uploaded, so the bar never guesses. */
+  const [progress, setProgress] = useState<{ fraction: number | null; loaded: number; total: number | null; name: string } | null>(null);
+  const [justDone, setJustDone] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   /**
@@ -95,17 +100,34 @@ export default function DocumentSlots({
       if (!file) return;
 
       setUploading(slot.id);
+      setProgress({ fraction: 0, loaded: 0, total: file.size ?? null, name: file.name });
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       await uploadDocument({
         applicationId,
         documentId: slot.id,
         documentType: slot.type,
         file,
+        signal: controller.signal,
+        onProgress: (fraction, loaded, total) =>
+          setProgress({ fraction, loaded, total, name: file.name }),
       });
+
+      // Held briefly as a tick so the applicant sees it finished, rather than
+      // the row simply vanishing — which reads as something having gone wrong.
+      setJustDone(slot.id);
+      setTimeout(() => setJustDone((id) => (id === slot.id ? null : id)), 1600);
       await onUploaded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'We could not upload that.');
+      // Cancelling is a choice, not a failure, and must not be apologised for.
+      if (err instanceof UploadCancelled) setError(null);
+      else setError(err instanceof Error ? err.message : 'We could not upload that.');
     } finally {
       setUploading(null);
+      setProgress(null);
+      abortRef.current = null;
     }
   }
 
@@ -113,6 +135,31 @@ export default function DocumentSlots({
     const supplied = slot.status === 'Uploaded';
     const busy = uploading === slot.id;
     const kind = fileKind(null, slot.fileName);
+    const finishing = justDone === slot.id;
+
+    /**
+     * While this slot is uploading it becomes the progress row.
+     *
+     * Replacing the slot rather than sitting beside it: the applicant is
+     * watching one thing, and a bar underneath an unchanged row invites a
+     * second tap on the row itself.
+     */
+    if (busy && progress) {
+      return (
+        <UploadProgress
+          key={slot.id}
+          fileName={progress.name}
+          fraction={progress.fraction}
+          loaded={progress.loaded}
+          total={progress.total}
+          onCancel={() => abortRef.current?.abort()}
+        />
+      );
+    }
+
+    if (finishing) {
+      return <UploadProgress key={slot.id} fileName={slot.fileName || slot.name} fraction={1} done />;
+    }
 
     return (
       <Pressable

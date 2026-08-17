@@ -161,16 +161,34 @@ async function prepare(file: PickedFile): Promise<PickedFile> {
  * operation — it attaches an extra optional document and leaves the requirement
  * open, which is right for somebody adding a second payslip and wrong here.
  */
+/** Thrown when the applicant cancelled. Not an error to apologise for. */
+export class UploadCancelled extends Error {
+  constructor() {
+    super('Upload cancelled');
+    this.name = 'UploadCancelled';
+  }
+}
+
 export async function uploadDocument({
   applicationId,
   documentId,
   documentType,
   file,
+  onProgress,
+  signal,
 }: {
   applicationId: string;
   documentId?: string;
   documentType: string;
   file: PickedFile;
+  /**
+   * Called with the true fraction sent, 0 to 1, and null where the total is
+   * unknown. Never invented: a bar that creeps to 90% and waits teaches people
+   * that the number means nothing, which is worse than no number at all.
+   */
+  onProgress?: (fraction: number | null, loaded: number, total: number | null) => void;
+  /** Aborts the upload. Somebody on a bad link needs an option besides closing the app. */
+  signal?: AbortSignal;
 }): Promise<void> {
   if (file.size && file.size > MAX_BYTES) {
     throw new Error(
@@ -224,8 +242,20 @@ export async function uploadDocument({
        * is thrown away at the end.
        */
       timeout: 180000,
+      signal,
+      onUploadProgress: (event) => {
+        if (!onProgress) return;
+        // event.total is absent on some React Native networking stacks. Report
+        // null rather than dividing by an assumed size.
+        const total = event.total ?? null;
+        onProgress(total ? event.loaded / total : null, event.loaded, total);
+      },
     });
   } catch (error) {
+    // A cancellation is not a failure and must not be reported as one.
+    if ((error as { code?: string })?.code === 'ERR_CANCELED') {
+      throw new UploadCancelled();
+    }
     // The API writes its own wording for applicants; `friendlyError` prefers it
     // over anything invented here, and falls back to plain language rather than
     // axios's "Request failed with status code 400".
