@@ -9,7 +9,7 @@ import {
 import { useDraft } from '../../../src/services/draft';
 import api, { friendlyError } from '../../../src/services/api';
 import {
-  cellNumberProblem, EMPLOYER_DETAILS_NEEDED, EMPLOYMENT_STATUS, identityFromIdNumber,
+  cellNumberProblem, identityFromIdNumber,
   idNumberProblem, MARITAL_STATUS, postalProblems, SEX, sexFromIdNumber, TITLES,
 } from '../../../src/lib/application';
 import { colors, font, radius, space, type } from '../../../src/theme';
@@ -58,7 +58,6 @@ export default function Particulars() {
   const cellProblem = cellNumberProblem(form.cellNumber);
   const postalIssues = postalProblems(form);
 
-  const needsEmployer = EMPLOYER_DETAILS_NEEDED.includes(form.employmentStatus);
 
   /** What must be answered before this step can be left. */
   const blocking = useMemo(() => {
@@ -382,54 +381,16 @@ export default function Particulars() {
           ) : null}
         </Panel>
 
-        {/* --- Employment ----------------------------------------------- */}
-        <Panel>
-          <SectionTitle icon="money">Employment</SectionTitle>
+        {/*
+          Employment is no longer asked here.
 
-          {/* A dropdown even though the answer *does* reveal the employer fields
-              below. Those fields appear directly underneath and are impossible
-              to miss once shown, so nothing is hidden by collapsing the list —
-              unlike tenure, where the consequence is a document requirement two
-              screens away. */}
-          <Select
-            label="Are you employed?"
-            value={form.employmentStatus as never}
-            options={EMPLOYMENT_STATUS}
-            onChange={(v) => set('employmentStatus', v)}
-          />
-
-          {needsEmployer ? (
-            <>
-              <Field
-                label={form.employmentStatus === 'SELF_EMPLOYED' ? 'Name of your business' : 'Name of employer'}
-                value={form.employerName}
-                onChangeText={(v) => set('employerName', v)}
-                placeholder="Acme Foundry"
-                autoCapitalize="words"
-              />
-              <Field
-                label={form.employmentStatus === 'SELF_EMPLOYED' ? 'Business address' : "Employer's address"}
-                value={form.employerAddress}
-                onChangeText={(v) => set('employerAddress', v)}
-                placeholder="1 Works Road, Vanderbijlpark"
-                autoCapitalize="words"
-              />
-              <Field
-                label="Work telephone number"
-                optional
-                value={form.workTelNumber}
-                onChangeText={(v) => set('workTelNumber', v)}
-                placeholder="016 100 2000"
-                keyboardType="phone-pad"
-              />
-            </>
-          ) : form.employmentStatus ? (
-            <Hint>
-              No employer details are needed. You will be asked about any money the household receives on a
-              later step.
-            </Hint>
-          ) : null}
-        </Panel>
+          It was a question of its own — "are you employed?" — with employer
+          details hanging off it, and it assumed the answer was a job. Both are
+          now derived from the income step: a salary means employed, a business
+          means self-employed, and the employer is asked against the salary it
+          pays rather than as a separate fact. A form with two places to state
+          whether somebody works has two places to disagree.
+        */}
 
         <Actions>
           <Button title="Save and continue" onPress={next} loading={saving} />

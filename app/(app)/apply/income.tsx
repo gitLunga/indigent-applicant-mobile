@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Stepper from '../../../src/components/Stepper';
+import IncomeSources from '../../../src/components/IncomeSources';
 import {
   Actions, Alert, Button, Field, Hint, Panel, Screen, SectionTitle,
 } from '../../../src/components/ui';
@@ -35,19 +36,7 @@ export default function Income() {
 
   useEffect(() => { refreshHousehold(); }, [refreshHousehold]);
 
-  const total = useMemo(() => {
-    const parts = [form.salary, form.oldAgePension, form.disabilityPension, form.businessIncome, form.rentingIncome];
-    return parts.reduce((sum, value) => sum + (Number(value) || 0), 0);
-  }, [form.salary, form.oldAgePension, form.disabilityPension, form.businessIncome, form.rentingIncome]);
 
-  /** Everyone's income, including the members listed below. */
-  const householdTotal = useMemo(
-    () => total + household.reduce((sum, m) => sum + (Number(m.income) || 0), 0),
-    [total, household]
-  );
-
-  const people = Number(form.peopleOnProperty) || 0;
-  const perPerson = people > 0 ? householdTotal / people : null;
 
   const blocking = useMemo(() => {
     const found: string[] = [];
@@ -198,70 +187,31 @@ export default function Income() {
           )}
         </Panel>
 
-        {/* --- Income --------------------------------------------------- */}
+        {/*
+          Income, as a list of sources rather than five fixed boxes.
+
+          The old screen asked for a salary, an old age pension, a disability
+          grant, business takings and rent — in that order, every time. Most
+          households scrolled past three boxes that did not apply to reach the
+          one that did, and a household with two grants had nowhere to put the
+          second. IncomeSources asks where the money comes from and takes as
+          many answers as there are.
+        */}
+        <IncomeSources
+          applicationId={applicationId}
+          people={form.peopleOnProperty}
+        />
+
         <Panel>
-          <SectionTitle icon="money">Money coming in each month</SectionTitle>
-          <Hint>
-            Enter what the household actually receives each month, before any deductions. If a source does not
-            apply, leave it blank.
-          </Hint>
-
-          <Field label="Salary or wages" optional value={form.salary}
-            onChangeText={(v) => set('salary', v.replace(/[^\d.]/g, ''))}
-            placeholder="0" keyboardType="decimal-pad" />
-
-          <Field label="Old age pension" optional value={form.oldAgePension}
-            onChangeText={(v) => set('oldAgePension', v.replace(/[^\d.]/g, ''))}
-            placeholder="0" keyboardType="decimal-pad" />
-
-          <Field label="Disability grant" optional value={form.disabilityPension}
-            onChangeText={(v) => set('disabilityPension', v.replace(/[^\d.]/g, ''))}
-            placeholder="0" keyboardType="decimal-pad" />
-
-          <Field label="Money from a business or piece work" optional value={form.businessIncome}
-            onChangeText={(v) => set('businessIncome', v.replace(/[^\d.]/g, ''))}
-            placeholder="0" keyboardType="decimal-pad"
-            hint="Including spaza takings, hairdressing, mechanics, anything run from home." />
-
-          <Field label="Rent received" optional value={form.rentingIncome}
-            onChangeText={(v) => set('rentingIncome', v.replace(/[^\d.]/g, ''))}
-            placeholder="0" keyboardType="decimal-pad"
-            hint="If you rent out a room or a back room." />
-
           <Field label="Anything else we should know about your income" optional
             value={form.incomeExclusions}
-            onChangeText={(v) => set('incomeExclusions', v)}
+            onChangeText={(v: string) => set('incomeExclusions', v)}
             placeholder="For example, work that stops in winter"
             multiline />
-
-          {/*
-            The arithmetic, not a verdict.
-            No mention of thresholds and no suggestion of an outcome: the means
-            test is the assessment officer's, and an app that hints at "you
-            qualify" undermines the decision and misleads the household.
-          */}
-          <View style={s.totals}>
-            <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Your income</Text>
-              <Text style={s.totalValue}>{money(total)}</Text>
-            </View>
-            {household.length ? (
-              <View style={s.totalRow}>
-                <Text style={s.totalLabel}>Everyone in the household</Text>
-                <Text style={s.totalValue}>{money(householdTotal)}</Text>
-              </View>
-            ) : null}
-            {perPerson !== null ? (
-              <View style={[s.totalRow, s.totalRowLast]}>
-                <Text style={s.totalLabel}>Per person, across {people}</Text>
-                <Text style={s.totalValue}>{money(perPerson)}</Text>
-              </View>
-            ) : null}
-            <Text style={s.totalNote}>
-              The municipality works these figures out again from what you have entered. An officer decides your
-              application — nothing here is a decision.
-            </Text>
-          </View>
+          <Hint>
+            The municipality works your figures out again from what you have entered. An officer decides your
+            application — nothing here is a decision.
+          </Hint>
         </Panel>
 
         <Actions>
