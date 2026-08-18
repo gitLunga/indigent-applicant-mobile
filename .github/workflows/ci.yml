@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    # An Expo app isn't "built" the way the web portals are — that happens on
+    # EAS, not here. TypeScript is already set up, so a typecheck is the
+    # equivalent cheap check: it catches a broken import or a prop that no
+    # longer matches a component's type, the mobile-side version of what the
+    # `vite build` step catches for the other two portals.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx tsc --noEmit
