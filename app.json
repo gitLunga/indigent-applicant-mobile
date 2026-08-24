@@ -49,14 +49,15 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Your location is used only to record where your property is, so a verification officer can find it. Giving it is optional."
         }
-      ]
+      ],
+      "expo-splash-screen"
     ],
     "scheme": "indigent",
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "http://192.168.18.160:5000/api"
+      "apiUrl": "http://api.indigent.malcam.co.za/api"
     }
   }
 }
