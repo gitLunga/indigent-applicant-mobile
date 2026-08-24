@@ -27,9 +27,14 @@ export default function Property() {
   const blocking = useMemo(() => {
     const found: string[] = [];
     if (!form.tenure) found.push('whether you own or rent');
+    // Rates relief belongs to the owner, so a verification officer needs a name
+    // to check against the deed once the applicant is not the owner themselves.
+    if ((form.tenure === 'TENANT' || form.tenure === 'OCCUPIER') && !form.ownerFullName.trim()) {
+      found.push("the property owner's full name");
+    }
     if (form.ownsOtherProperty === null) found.push('whether you own other property');
     return found;
-  }, [form.tenure, form.ownsOtherProperty]);
+  }, [form.tenure, form.ownerFullName, form.ownsOtherProperty]);
 
   /** What the choices above will ask for at the documents step. */
   const extraDocument = useMemo(() => {
@@ -84,6 +89,27 @@ export default function Property() {
 
           {extraDocument ? (
             <Alert tone="info">Because of this answer, you will be asked for {extraDocument}.</Alert>
+          ) : null}
+
+          {form.tenure === 'TENANT' || form.tenure === 'OCCUPIER' ? (
+            <>
+              <Field
+                label="Property owner's full name"
+                value={form.ownerFullName}
+                onChangeText={(v) => set('ownerFullName', v)}
+                placeholder="Who the property actually belongs to"
+                autoCapitalize="words"
+                hint="Since you are not the owner, we need to know who is."
+              />
+              <Field
+                label="Property owner's ID number"
+                optional
+                value={form.ownerIdNumber}
+                onChangeText={(v) => set('ownerIdNumber', v)}
+                placeholder="Only if you know it"
+                keyboardType="number-pad"
+              />
+            </>
           ) : null}
 
           <Select

@@ -122,6 +122,8 @@ export type ApplicationForm = {
 
   // Property
   tenure: string;
+  ownerFullName: string;
+  ownerIdNumber: string;
   applicantCategory: string;
   wardNumber: string;
   municipalAccountNumber: string;
@@ -176,7 +178,7 @@ export const emptyForm: ApplicationForm = {
   postalSameAsResidential: false, postalLine1: '', postalLine2: '',
   postalSuburb: '', postalCity: '', postalCode: '',
   employmentStatus: '', employerName: '', employerAddress: '', workTelNumber: '',
-  tenure: '', applicantCategory: 'STANDARD', wardNumber: '',
+  tenure: '', ownerFullName: '', ownerIdNumber: '', applicantCategory: 'STANDARD', wardNumber: '',
   municipalAccountNumber: '', eskomAccountNumber: '',
   waterMeterNumber: '', electricityMeterNumber: '',
   ownsOtherProperty: null, otherPropertyDetails: '',
@@ -232,6 +234,8 @@ export function formFromApplication(a: Record<string, any>): ApplicationForm {
     workTelNumber: str(a.workTelNumber),
 
     tenure: str(a.tenure),
+    ownerFullName: str(a.ownerFullName),
+    ownerIdNumber: str(a.ownerIdNumber),
     applicantCategory: str(a.applicantCategory) || 'STANDARD',
     wardNumber: str(a.wardNumber),
     municipalAccountNumber: str(a.municipalAccountNumber),
@@ -428,7 +432,7 @@ export function buildPayload(form: ApplicationForm, currentStep: number): Record
     'residentialAddress', 'employerName', 'employerAddress', 'workTelNumber',
     'employmentStatus', 'waterMeterNumber', 'electricityMeterNumber',
     'wardNumber', 'municipalAccountNumber', 'eskomAccountNumber',
-    'tenure', 'applicantCategory', 'otherPropertyDetails', 'incomeExclusions',
+    'tenure', 'ownerFullName', 'ownerIdNumber', 'applicantCategory', 'otherPropertyDetails', 'incomeExclusions',
     'difficultySeeing', 'difficultyHearing', 'difficultyWalking',
     'difficultyRemembering', 'difficultySelfCare', 'difficultyCommunicating',
   ] as const;
