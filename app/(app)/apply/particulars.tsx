@@ -90,15 +90,37 @@ export default function Particulars() {
       }
 
       const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-      set('addressLatitude', String(position.coords.latitude));
-      set('addressLongitude', String(position.coords.longitude));
+      const { latitude, longitude, accuracy } = position.coords;
+      set('addressLatitude', String(latitude));
+      set('addressLongitude', String(longitude));
       set('addressSource', 'DEVICE');
-      set('addressAccuracyM', position.coords.accuracy ? String(Math.round(position.coords.accuracy)) : '');
+      set('addressAccuracyM', accuracy ? String(Math.round(accuracy)) : '');
 
-      setLocationNote(
-        `Location captured, accurate to about ${Math.round(position.coords.accuracy ?? 0)} m. `
-        + 'Please still type your address so a verification officer can find the gate.'
-      );
+      // Turn the pin into a readable address, the same way the web portal does —
+      // otherwise the coordinates are captured but the applicant still has to
+      // type the same address the device just found.
+      try {
+        const res = await api.get('/geocode/reverse', { params: { lat: latitude, lon: longitude } });
+        const found = res.data?.data;
+        if (found?.formatted) {
+          set('addressFormatted', found.formatted);
+          // Only fill it in if they have not already typed something — a
+          // reverse lookup must never overwrite what somebody wrote themselves.
+          if (!form.residentialAddress.trim()) set('residentialAddress', found.formatted);
+          setLocationNote(`Location captured, accurate to about ${Math.round(accuracy ?? 0)} m.`);
+        } else {
+          setLocationNote(
+            res.data?.message
+            || `Location captured, accurate to about ${Math.round(accuracy ?? 0)} m. Please describe your address below.`
+          );
+        }
+      } catch {
+        // The position is still worth keeping even if the lookup failed.
+        setLocationNote(
+          `Location captured, accurate to about ${Math.round(accuracy ?? 0)} m. `
+          + 'We could not look up the address — please type it below.'
+        );
+      }
     } catch (err) {
       setLocationNote('We could not read your location. You can type your address instead.');
     } finally {
