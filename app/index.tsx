@@ -212,10 +212,11 @@ export default function Landing() {
         </View>
 
         <View style={s.footer}>
-          <Text style={s.footerText}>Terms &amp; Conditions © 2024. All rights reserved.</Text>
+          <Text style={s.footerText}>Terms &amp; Conditions © 2026. All rights reserved.</Text>
           <Text style={s.footerWarn}>
             The municipality will never ask you to pay for an indigent application.
           </Text>
+          <Text style={s.footerPowered}>Powered by Malcam ICT Solutions</Text>
         </View>
       </ScrollView>
     </View>
@@ -370,4 +371,5 @@ const s = StyleSheet.create({
   },
   footerText: { fontSize: type.hint, fontFamily: font.regular, color: colors.slate400, textAlign: 'center' },
   footerWarn: { fontSize: type.hint, fontFamily: font.medium, color: colors.slate300, textAlign: 'center' },
+  footerPowered: { fontSize: type.small, fontFamily: font.regular, color: colors.slate500, textAlign: 'center' },
 });

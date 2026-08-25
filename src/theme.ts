@@ -12,30 +12,32 @@
 
 export const colors = {
   // Brand
-  brand: '#c81e26',
-  brandStrong: '#a5161d',
-  brandSoft: '#fef2f2',
-  brandBorder: '#fecaca',
+  brand: '#2e9e44',
+  brandStrong: '#1f7a34',
+  brandSoft: '#eaf7ec',
+  brandBorder: '#bfe6c6',
 
-  // Institutional navy
-  navy900: '#0b1220',
-  navy800: '#131c2e',
-  navy700: '#1e2a41',
-  navy600: '#2b3a55',
+  // Institutional charcoal — near-black with a green undertone, not flat
+  // black, so it reads as one family with the brand rather than two
+  // unrelated colours.
+  navy900: '#0b120d',
+  navy800: '#14201a',
+  navy700: '#223028',
+  navy600: '#34453b',
 
-  // Neutrals
-  slate50: '#f8fafc',
-  slate100: '#f1f5f9',
-  slate200: '#e2e8f0',
-  slate300: '#cbd5e1',
-  slate400: '#94a3b8',
-  slate500: '#64748b',
-  slate600: '#475569',
-  slate700: '#334155',
-  slate800: '#1e293b',
-  slate900: '#0f172a',
+  // Neutrals — true grey, not blue-tinted
+  slate50: '#fafafa',
+  slate100: '#f4f4f5',
+  slate200: '#e4e4e7',
+  slate300: '#d4d4d8',
+  slate400: '#a1a1aa',
+  slate500: '#71717a',
+  slate600: '#52525b',
+  slate700: '#3f3f46',
+  slate800: '#27272a',
+  slate900: '#18181b',
 
-  // Semantic
+  // Semantic — left alone: not part of the brand identity
   success: '#15803d',
   successSoft: '#f0fdf4',
   successLine: '#bbf7d0',
@@ -50,13 +52,13 @@ export const colors = {
   infoLine: '#bfdbfe',
 
   // Roles
-  canvas: '#f6f7f9',
+  canvas: '#f7f7f6',
   surface: '#ffffff',
-  line: '#e2e8f0',
-  lineStrong: '#cbd5e1',
-  ink: '#0f172a',
-  inkSoft: '#475569',
-  inkMute: '#64748b',
+  line: '#e4e4e7',
+  lineStrong: '#d4d4d8',
+  ink: '#18181b',
+  inkSoft: '#52525b',
+  inkMute: '#71717a',
 
   white: '#ffffff',
   transparent: 'transparent',
