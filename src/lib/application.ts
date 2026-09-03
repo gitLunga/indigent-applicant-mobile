@@ -124,6 +124,8 @@ export type ApplicationForm = {
   tenure: string;
   ownerFullName: string;
   ownerIdNumber: string;
+  ownerRelationship: string;
+  ownerDeceased: boolean | null;
   applicantCategory: string;
   wardNumber: string;
   municipalAccountNumber: string;
@@ -178,7 +180,8 @@ export const emptyForm: ApplicationForm = {
   postalSameAsResidential: false, postalLine1: '', postalLine2: '',
   postalSuburb: '', postalCity: '', postalCode: '',
   employmentStatus: '', employerName: '', employerAddress: '', workTelNumber: '',
-  tenure: '', ownerFullName: '', ownerIdNumber: '', applicantCategory: 'STANDARD', wardNumber: '',
+  tenure: '', ownerFullName: '', ownerIdNumber: '', ownerRelationship: '', ownerDeceased: null,
+  applicantCategory: 'STANDARD', wardNumber: '',
   municipalAccountNumber: '', eskomAccountNumber: '',
   waterMeterNumber: '', electricityMeterNumber: '',
   ownsOtherProperty: null, otherPropertyDetails: '',
@@ -236,6 +239,8 @@ export function formFromApplication(a: Record<string, any>): ApplicationForm {
     tenure: str(a.tenure),
     ownerFullName: str(a.ownerFullName),
     ownerIdNumber: str(a.ownerIdNumber),
+    ownerRelationship: str(a.ownerRelationship),
+    ownerDeceased: bool(a.ownerDeceased),
     applicantCategory: str(a.applicantCategory) || 'STANDARD',
     wardNumber: str(a.wardNumber),
     municipalAccountNumber: str(a.municipalAccountNumber),
@@ -432,7 +437,7 @@ export function buildPayload(form: ApplicationForm, currentStep: number): Record
     'residentialAddress', 'employerName', 'employerAddress', 'workTelNumber',
     'employmentStatus', 'waterMeterNumber', 'electricityMeterNumber',
     'wardNumber', 'municipalAccountNumber', 'eskomAccountNumber',
-    'tenure', 'ownerFullName', 'ownerIdNumber', 'applicantCategory', 'otherPropertyDetails', 'incomeExclusions',
+    'tenure', 'ownerFullName', 'ownerIdNumber', 'ownerRelationship', 'applicantCategory', 'otherPropertyDetails', 'incomeExclusions',
     'difficultySeeing', 'difficultyHearing', 'difficultyWalking',
     'difficultyRemembering', 'difficultySelfCare', 'difficultyCommunicating',
   ] as const;
@@ -480,7 +485,7 @@ export function buildPayload(form: ApplicationForm, currentStep: number): Record
     });
 
   (['ownsImmovableProperty', 'isFullTimeOccupant', 'hasMunicipalArrears',
-    'hasArrearsArrangement', 'ownsOtherProperty'] as const).forEach((key) => {
+    'hasArrearsArrangement', 'ownsOtherProperty', 'ownerDeceased'] as const).forEach((key) => {
     if (form[key] === true || form[key] === false) payload[key] = form[key];
   });
 

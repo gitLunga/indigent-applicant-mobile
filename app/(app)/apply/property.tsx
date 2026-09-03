@@ -109,6 +109,19 @@ export default function Property() {
                 placeholder="Only if you know it"
                 keyboardType="number-pad"
               />
+              <Field
+                label="Your relationship to the owner"
+                optional
+                value={form.ownerRelationship}
+                onChangeText={(v) => set('ownerRelationship', v)}
+                placeholder="e.g. Landlord, my mother, my employer"
+              />
+              <YesNo
+                label="Has the owner passed away?"
+                optional
+                value={form.ownerDeceased}
+                onChange={(v) => set('ownerDeceased', v)}
+              />
             </>
           ) : null}
 
