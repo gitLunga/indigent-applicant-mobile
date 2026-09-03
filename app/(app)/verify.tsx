@@ -71,10 +71,11 @@ export default function Verify() {
     setError(null);
     setChecking(true);
     try {
-      await api.post('/auth/verify-otp', { cellNumber: user?.cellNumber, code: value });
-      // The gate in the root layout reads isVerified, so it has to be updated
-      // here or the redirect sends us straight back to this screen.
-      patchUser({ isVerified: true });
+      const res = await api.post('/auth/verify-otp', { cellNumber: user?.cellNumber, code: value });
+      // Taken from what the server actually did, not assumed — a 200 here used
+      // to mean only "the code was right", which is not the same thing as "an
+      // account was verified".
+      patchUser({ isVerified: Boolean(res.data?.data?.user?.isVerified) });
       router.replace('/(app)/dashboard');
     } catch (err) {
       setError(friendlyError(err, 'That code is not valid or has expired.'));
