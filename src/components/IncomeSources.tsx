@@ -39,6 +39,7 @@ type Source = {
   businessName?: string | null;
   businessType?: string | null;
   isRegistered?: boolean | null;
+  registrationNumber?: string | null;
   otherDetail?: string | null;
 };
 
@@ -47,6 +48,7 @@ const FIELD_LABELS: Record<string, string> = {
   employerName: 'Who do you work for?',
   businessName: 'What is the business called?',
   businessType: 'What does the business do?',
+  registrationNumber: 'Business registration number',
   otherDetail: 'What is this income?',
 };
 
@@ -55,6 +57,7 @@ const FIELD_PLACEHOLDERS: Record<string, string> = {
   employerName: 'Name of your employer',
   businessName: 'Name of the business',
   businessType: 'Spaza shop, hair salon, taxi…',
+  registrationNumber: 'From the CIPC registration certificate',
   otherDetail: 'Say where this money comes from',
 };
 
@@ -211,8 +214,13 @@ export default function IncomeSources({
             hint={definition(draft.type)?.hint}
           />
 
-          {(definition(draft.type)?.asks || []).map((field) => (
-            field === 'isRegistered' ? (
+          {(definition(draft.type)?.asks || []).map((field) => {
+            // Only a registered business has a number to give — asked right
+            // after that answer, not as a fixed part of the list, so it never
+            // appears before "registered" has actually been chosen.
+            if (field === 'registrationNumber' && draft.isRegistered !== true) return null;
+
+            return field === 'isRegistered' ? (
               <YesNo
                 key={field}
                 label="Is the business registered?"
@@ -229,8 +237,8 @@ export default function IncomeSources({
                 onChangeText={(v: string) => setDraft({ ...draft, [field]: v })}
                 placeholder={FIELD_PLACEHOLDERS[field] || ''}
               />
-            )
-          ))}
+            );
+          })}
 
           {draft.type ? (
             <Field
